@@ -12,6 +12,7 @@ class QuaterNet(nn.Module):
     """
     QuaterNet general architecture.
     Attributes
+    ----------
         * num_joints   : number of skeleton joints
         * num_outputs  : extra inputs/outputs, in addition to joint rotations 
         * num_controls : extra input-level features
@@ -19,9 +20,9 @@ class QuaterNet(nn.Module):
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
     Methods
+    -------
         * __init__() : initialization
         * forward()  : forward propagation 
-        * 
     """
 
 
@@ -30,6 +31,7 @@ class QuaterNet(nn.Module):
         """
         Initializer
         Input
+        -----
             * self
             * num_joints   : number of skeleton joints
             * num_outputs  : extra inputs/outputs, in addition to joint rotations 
@@ -38,7 +40,8 @@ class QuaterNet(nn.Module):
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
                         
-        OutPut
+        Output
+        ------
             * None
         """
 
@@ -90,6 +93,7 @@ class QuaterNet(nn.Module):
         """
         Forward propagation.
         Input
+        ------
             * self
             * x : input tensor
                   size = ( batch_size, sequence_length, 4 * num_joints + num_outputs + fc2_size)
@@ -98,6 +102,7 @@ class QuaterNet(nn.Module):
             * return_all     : flag -> if True, it returns all sencuance_lenght frames,
                                        otherwise, it returns only the last frame.
         Output
+        ------
             model evaluation
         """
 
