@@ -83,3 +83,42 @@ def qeuler(q, order, epsilon = 0):
         * Tensor with dimensions (N, 3) ;  Euler angles
     """
 
+    assert q.shape[-1] == 4
+    
+    original_shape = list(q.shape)
+    original_shape[-1] = 3
+    
+    q = q.view(-1, 4)
+    q0 = q[:, 0]
+    q1 = q[:, 1]
+    q2 = q[:, 2]
+    q3 = q[:, 3]
+    
+    if order == 'xyz':
+        x = torch.atan2( 2 * (q0*q1 - q2*q3) , 1 - 2 * (q1*q1 + q2*q2) )
+        y = torch.asin( torch.clamp( 2 * (q1*q3 + q0*q2), -1 + epsilon, 1 - epsilon) )
+        z = torch.atan2( 2 * (q0*q3 - q1*q2), 1 - 2 * (q2*q2 + q3*q3) )
+    elif order == 'yzx':
+        x = torch.atan2( 2 * (q0*q1 - q2*q3) , 1 - 2 * (q1*q1 + q3*q3) )
+        y = torch.atan2( 2 * (q0*q2 -q1*q3) , 1 - 2 * (q2*q2 + q3*q3) )
+        z = torch.asin( torch.clamp( 2 * (q1*q2 + q0*q3), -1 + epsilon, 1- epsilon) )
+    elif order == 'zxy':
+        x = torch.asin( torch.clamp( 2 * (q0*q1 + q2*q3), -1 + epsilon, 1 - epsilon) )
+        y = torch.atan2( 2 * (q0*q2 - q1*q3) , 1 - 2 * (q1*q1 + q2*q2) )
+        z = torch.atan2( 2 * (q0*q3 - q1*q2), 1 - 2 * (q1*q1 + q3*q3) )
+    elif order == 'xzy':
+        x = torch.atan2( 2 * (q0*q1 + q2*q3), 1 - 2 * (q1*q1 + q3*q3) )
+        y = torch.atan2( 2 * (q0*q2 + q1*q3), 1 - 2 * (q2*q2 + q3*q3) )
+        z = torch.asin( torch.clamp(2 * (q0*q3 - q1*q2), -1 + epsilon, 1 - epsilon) )
+    elif order == 'yxz':
+        x = torch.asin( torch.clamp( 2 * (q0*q1 - q2*q3), -1 + epsilon, 1 - epsilon) )
+        y = torch.atan2( 2 * (q1*q3 + q0*q2), 1 - 2 * (q1*q1 + q2*q2) )
+        z = torch.atan2( 2 * (q1*q2 + q0*q3), 1 - 2 * (q1*q1 + q3*q3) )
+    elif order == 'zyx':
+        x = torch.atan2( 2 * (q0*q1 + q2*q3), 1 - 2 * (q1*q1 + q2*q2) )
+        y = torch.asin( torch.clamp( 2 * (q0*q2 - q1*q3), -1 + epsilon , 1 - epsilon) )
+        z = torch.atan2( 2 * (q0*q3 + q1*q2), 1 - 2 * (q2*q2 + q3*q3) )
+    else:
+        raise
+
+    return torch.stack( (x,y,z), dim=1 ).view(original_shape)
