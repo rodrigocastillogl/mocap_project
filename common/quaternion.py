@@ -13,14 +13,14 @@ def qmul(q, r):
     Multiply quaternion(s) q with quaternion(s) r.
     Input
     ------
-        * q : tensor with dimensions (N, 4) ; Quaternions
-        * r : tensor with dimensions (N, 4) ; Quaternions
+        * q : tensor with dimensions (N, 4) ; quaternion(s)
+        * r : tensor with dimensions (N, 4) ; quaternion(s)
 
         N -> number of quaternions in the tensors
 
     Output
     ------
-        * Tensor with dimensions (N ,4) ; Quaternions product
+        * Tensor with dimensions (N ,4) ; quaternion(s) product
     """
 
     assert q.shape[-1] == 4
@@ -44,13 +44,13 @@ def qrot(q, v):
     Rotate vector(s) v about the rotations described by quaternion(s) q
     Input
     ------
-        * q : tensor with dimensions (N, 4) ; Quaternions
-        * v : tensor with dimensions (N, 3) ; Vectors
+        * q : tensor with dimensions (N, 4) ; quaternion(s)
+        * v : tensor with dimensions (N, 3) ; vector(s)
 
         n -> number os quaternions/vectors in the tensors 
     Output
     ------
-        * Tensor with dimension (N, 3) ; Vectors rotated
+        * Tensor with dimension (N, 3) ; vector(s) rotated
     """
 
     assert q.shape[-1] == 4
@@ -75,7 +75,7 @@ def qeuler(q, order, epsilon = 0):
     Convert quaternion(s) q to Euler Angles 
     Input
     ------
-        * q : Tensor with dimensions (N, 4) ;  Quaternions
+        * q : Tensor with dimensions (N, 4) ;  quaternion(s)
         * order   : order of rotation in Euler angles
         * epsilon : avoid indeterminate result
     Output
@@ -122,3 +122,68 @@ def qeuler(q, order, epsilon = 0):
         raise
 
     return torch.stack( (x,y,z), dim=1 ).view(original_shape)
+
+
+
+# Numpy based implementations of Quaternion methods
+
+def qmul_np(q, r):
+    """
+    Multiply quaternion(s) q with quaternion(s) r.
+    Input
+    ------
+        * q : numpy array with dimensions (N, 4) ; quaternion(s)
+        * r : numpy array with dimensions (N, 4) ; quaternion(s)
+
+        N -> number of quaternions in the arrays
+
+    Output
+    ------
+        * numpy array with dimensions (N ,4) ; quaternions product
+    """
+    
+    q = torch.from_numpy(q).contiguous()
+    r = torch.from_numpy(r).contiguous()
+
+    return qrot(q, r).numpy()
+
+
+def qrot_np(q, v):
+    """
+    Rotate vector(s) v about the rotations described by quaternion(s) q
+    Input
+    ------
+        * q : numpy array with dimensions (N, 4) ; quaternion(s)
+        * v : numpy array with dimensions (N, 3) ; vector(s)
+
+        n -> number os quaternions/vectors in the arrays 
+    Output
+    ------
+        * numpy array with dimension (N, 3) ; vector(s) rotated
+    """
+
+    q = torch.from_numpy(q).contiguous()
+    v = torch.from_numpy(v).contiguous()
+
+    return qrot(q, v).numpy()
+
+def qeuler_np(q, order, epsilon = 0, use_gpu = False):
+    """
+    Convert quaternion(s) q to Euler Angles 
+    Input
+    ------
+        * q : numpy array with dimensions (N, 4) ;  quaternion(s)
+        * order   : order of rotation in Euler angles
+        * epsilon : avoid indeterminate result
+        * use_gpu : flag
+    Output
+    ------
+        * Tensor with dimensions (N, 3) ;  Euler angles
+    """
+
+    if use_gpu:
+        q = torch.from_numpy(q).cuda()
+        return qeuler(q, order, epsilon).cpu().numpy()
+    else:
+        q = torch.from_numpy(q).contiguous()
+        return qeuler(q, order, epsilon).numpy()
