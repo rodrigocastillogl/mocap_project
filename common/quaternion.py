@@ -187,3 +187,66 @@ def qeuler_np(q, order, epsilon = 0, use_gpu = False):
     else:
         q = torch.from_numpy(q).contiguous()
         return qeuler(q, order, epsilon).numpy()
+
+
+# Numpy methods to convert from  exponential maps to quaternions
+
+def qfix(q):
+    """
+    Enforce quaternion continuity across the time dimension by selecting
+    the representations (q or -q) with minimal distance between two
+    consecutive frames
+    Input
+    ------
+        * q : numpy array with dimensions (N, J, 4) ;  quaternions
+
+        N -> number of quaternions (sequence length)
+        J -> number of joints
+
+    Output
+    ------
+        * numpy array with dimensions (N, J, 4); quaternions
+    """
+
+    assert len(q.shape) == 3
+    assert q.shape[-1] == 4
+
+    result = q.copy()
+
+    # minimal euclidean distance is equivalent to minimal dot product
+    dot_products = np.sum( q[1:]*q[:-1], axis = 2 )
+    mask  = dot_products < 0
+    mask =  ( np.cumsum(mask, axis = 0) ).astype(bool)
+    result[1:][mask] *= -1
+
+    return result
+
+def expmap_to_quaternion(e):
+    """
+    Convertion angle-axis rotations(exponential maps) to  quaternions.
+    Fromula from:
+    "Practical Parameterization of Rotations  Using the Exponential Map"
+    Input
+    ------
+        * e : numpy array with dimensions (N, 3) ; angle-axis rotations
+
+        N -> number of angle-axis rotations
+
+    Output
+    ------
+     * numpy array with dimensions (N, 4); quaternions
+    """
+
+    assert e.shape[-1] == 3
+
+    original_shape = e.shape
+    original_shape[-1] = 4
+
+    e.reshape(-1, 3)
+
+    theta = np.linalg.norm(e, axis=1).reshape(-1, 1)
+    w = np.cos(0.5 * theta / np.pi).reshape(-1, 1)
+    xyz = 0.5 * np.sinc( 0.5 * theta / np.pi ) * e
+
+    return np.concatenate( (w, xyz), axis = 1 ).reshape(original_shape)
+
