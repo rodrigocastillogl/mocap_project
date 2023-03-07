@@ -144,8 +144,33 @@ class Skeleton:
         """
         pass
 
+    def joints_left(self):
+        """
+        Return skeleton left joints
+        """
+        
+        return self._joints_left
+    
+    def joints_right(self):
+        """
+        Return skeleton right joints
+        """
+        
+        return self._joints_right
+
     def _compute_metadata(self):
         """
         Description
         """
-        pass
+        
+        self._has_children = np.zeros( len( self._parents) ).astype(bool)
+        for i, parent in enumerate( self._parents ):
+            if parent != -1:
+                self._has_children[parent] = True
+        
+        self._children = []
+        for i, parent in enumerate( self._parents ):
+            self._children.append([])
+        for i, parent in enumerate( self._parents ):
+            if parent != -1:
+                self._children[parent].append(i)
