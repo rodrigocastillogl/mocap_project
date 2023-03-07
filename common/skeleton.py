@@ -81,7 +81,7 @@ class Skeleton:
     
     def has_children(self):
         """
-        Returns a boolean array: 1 if the joint has children, 0 if not
+        Return a boolean array: 1 if the joint has children, 0 if not
         Input
         -----
             None
@@ -94,6 +94,7 @@ class Skeleton:
     
     def children(self):
         """
+        Return joints' children
         """
 
         return self._children
