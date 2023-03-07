@@ -103,6 +103,13 @@ class Skeleton:
         Remove joints specified in joints_to_remove, both from the skeleton
         object and from the dataset (modified in place). the rotation of removed
         joints are propagated along the kinematic chain (forward kinematics).
+        Input
+        -----
+            * joints_to_remove : joints to remove qiven by indices
+            * dataset : dataset object
+        Output
+        ------
+            None
         """
 
         valid_joints = []
@@ -138,6 +145,7 @@ class Skeleton:
         self._offsets = self._offsets[valid_joints]
         self._compute_metadata()
     
+
     def forward_kinematics(self, rotations, root_positions):
         """
         Forward kinematics using root positions and  local rotations.
