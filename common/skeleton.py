@@ -102,7 +102,7 @@ class Skeleton:
         """
         Remove joints specified in joints_to_remove, both from the skeleton
         object and from the dataset (modified in place). the rotation of removed
-        joints are propagated along the kinematic chain (forward kinematics). 
+        joints are propagated along the kinematic chain (forward kinematics).
         """
 
         valid_joints = []
@@ -140,9 +140,49 @@ class Skeleton:
     
     def forward_kinematics(self, rotations, root_positions):
         """
-        Description
+        Forward kinematics using root positions and  local rotations.
+        Input
+        -----
+            * rotations     : tensor with dimensions (N, L, J, 4); sequence of quaternions 
+            * rootpositions : tensor with dimensions (N, L, 3); root world positions
+
+            N -> batch size, L -> sequence length, J -> number of joints 
+        Output
+        ------
+            Joints world positions
         """
-        pass
+        
+        assert len( rotations.shape ) == 4
+        assert rotations.shape[-1] == 4
+
+        positions_world = []
+        rotations_world = []
+
+        expanded_offsets = self._offsets.expand(
+            rotations.shape[0],
+            rotations.shape[1],
+            self._offsets.shape[0],
+            self._offsets.shape[1]
+        )
+
+        # parallel along the batch and time dimensions
+        for i in range( self._offsets.shape[0] ):
+            if self._parents[i] == -1:
+                positions_world.append(root_positions)
+                rotations_world.append(rotations[:, :, 0])
+            else:
+                positions_world.append(
+                    qrot( rotations_world[ self._parents[i] ],
+                          expanded_offsets[:, :, i] ) + positions_world[ self._parents[i] ]
+                )
+                if self._has_children[i]:
+                    rotations_world.append(
+                        qmul( rotations_world[ self._parents[i] ], rotations[:, :, i] )
+                    )
+                else:
+                    rotations_world.append(None)
+                
+        return torch.stack( positions_world, dim = 3 ).permute( 0 ,1, 3, 2 )
 
     def joints_left(self):
         """
