@@ -57,7 +57,6 @@ def qrot(q, v):
     assert v.shape[-1] == 3
     assert q.shape[:-1] == v.shape[:-1]
 
-
     original_shape = list(v.shape)
 
     q = q.view(-1, 4)
