@@ -117,7 +117,7 @@ if __name__ == '__main__':
         )
 
         # delete extracted files
-        rmtree( output_directory + 'h3.6m' )
+        rmtree( output_directory + '/h3.6m' )
         
         # Complete
         print('Done.')
