@@ -241,7 +241,7 @@ def expmap_to_quaternion(e):
     original_shape = list(e.shape)
     original_shape[-1] = 4
 
-    e.reshape(-1, 3)
+    e = e.reshape(-1, 3)
 
     theta = np.linalg.norm(e, axis=1).reshape(-1, 1)
     w = np.cos( 0.5 * theta ).reshape(-1, 1)
