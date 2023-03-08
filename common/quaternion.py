@@ -238,7 +238,7 @@ def expmap_to_quaternion(e):
 
     assert e.shape[-1] == 3
 
-    original_shape = e.shape
+    original_shape = list(e.shape)
     original_shape[-1] = 4
 
     e.reshape(-1, 3)
