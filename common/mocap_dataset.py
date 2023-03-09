@@ -207,7 +207,7 @@ class MocapDataset:
     def compute_euler_angles(self, order):
         """
         Compute Euler angles parameterization for every sequences.
-        Add a new key in every action named 'rorations_euler'.
+        Add a new key to every action in self.data: 'rorations_euler'.
         Input
         -----
             * order : order of rotations in Euler angles
@@ -216,8 +216,55 @@ class MocapDataset:
             None (In-place operator)
         """
 
+        # for every subject, and for every action
         for subject in self._data.values():
             for action in subject.values():
+                # add euler angles parameterization
                 action['rotation_euler'] = qeuler_np(
                     action['rotations'], order, use_gpu = self._use_gpu
                 )
+
+    def compute_positions(self):
+        """
+        Forward kinematics to compute global and local positions of the joints.
+        Add to new keys to every action in self._data: 'positions_world', 'positions_local'
+        Input
+        -----
+            None
+        Output
+        ------
+            None (In-place operator)
+        """
+
+        for subject in self._data.values():
+            for action in subject.values():
+
+                # rotations and trajectory as PyTorch tensor
+                rotations = torch.from_numpy( action['rotations'].astype('float32') ).unsqueeze(0)
+                trajectory = torch.from_numpy( action['trajectory'].astype('float32') ).usqueeze(0)
+
+                # send to CUDA
+                if self._use_gpu:
+                    rotations.cuda()
+                    trajectory.cuda()
+                
+                action['position_world'] = self._skeleton.forward_kinematics(rotations, trajectory).squeeze(0).cpu().numpy()
+
+                # Absolute translations across the XY plane are removed
+                trajectory[:, :, [0,2]] = 0
+                action['position_local'] = self._skeleton.forward_kinematics(rotations, trajectory).squeeze(0).cpu().numpy()
+    
+
+    def __getitem__(self, key):
+        """
+        Return the subject dictionary specified by key
+        Input
+        -----
+            * key: subject name in dataset
+        Output
+        ------
+            * subject dictionary ( subject -> actions -> rotations, trajectory, etc )
+        """
+
+        return self._data[key]
+    
