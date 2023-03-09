@@ -178,3 +178,46 @@ class MocapDataset:
             'rotations' : qfix(mirrored_rotations),
             'trajectory': mirrored_trajectory
         }
+    
+    def mirror(self):
+        """
+        Data augmentation by mirroring every sequence in the data set.
+        The mirrored sequences are saved with a "_m" appended to the action name.
+        Input
+        -----
+            None
+        Output
+        ------
+            None (In-plae operator)
+        """
+        
+        # for every subject
+        for subject in self._data.keys():
+            # for every action
+            for action in list( subject.keys() ):
+                
+                if '_m' in action: # already mirrored sequence
+                    continue
+
+                # Add mirrored sequence 
+                self._data[subject][action + '_m'] = self._mirror_sequence(
+                    self._data[subject][action]
+                )
+    
+    def compute_euler_angles(self, order):
+        """
+        Compute Euler angles parameterization for every sequences.
+        Add a new key in every action named 'rorations_euler'.
+        Input
+        -----
+            * order : order of rotations in Euler angles
+        Output
+        ------
+            None (In-place operator)
+        """
+
+        for subject in self._data.values():
+            for action in subject.values():
+                action['rotation_euler'] = qeuler_np(
+                    action['rotations'], order, use_gpu = self._use_gpu
+                )
