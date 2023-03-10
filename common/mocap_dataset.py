@@ -268,3 +268,77 @@ class MocapDataset:
 
         return self._data[key]
     
+
+    def subjects(self):
+        """
+        Return subject names in the dataset object.
+        Input
+        -----
+            None
+        Output
+        ------
+            Subjects; _data dictionary keys.
+        """
+
+        return self._data.keys()
+    
+
+    def subject_actions(self, subject):
+        """
+        Return action names of given subject.
+        Input
+        -----
+            subject : subject name; str
+        Output
+        ------
+            Actions; subject dictionary keys.
+        """
+
+        return self._data[subject].keys()
+    
+    
+    def all_actions(self):
+        """
+        Return all the action names in the dataset.
+        Input
+        -----
+            None
+        Output
+        ------
+            list with all the (subject, action) tuples. 
+        """
+
+        result = []
+
+        for subject, actions in self._data.items():
+            for action in actions.keys():
+                result.append( (subject, action) )
+        
+        return result
+    
+    
+    def fps(self):
+        """
+        Return  sampling rate (frames per second).
+        Input
+        -----
+            None
+        Output
+        ------
+            Sampling frequency
+        """
+
+        return self._fps
+    
+    def skeleton(self):
+        """
+        Return skeleton.
+        Input
+        -----
+            None
+        Output
+        ------
+            Skeleton
+        """
+
+        return self._skeleton
