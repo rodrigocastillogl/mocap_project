@@ -15,7 +15,12 @@ def render_animation(data, skeleton, fps, output = 'interactive', bitrate = 1000
     Input
     -----
         * data : skeleton configurations
-                dimension: 
+                dimensions (N, J, 4)
+                root trajectory = data[:, 0, :]
+                root trajectory with no height (floor level) = data[:, 0, [0,2] ]
+
+                N -> number of frames, J -> number of joints
+
         * skeleton : skeleton object.
         * fps : sampling rate (frames per second).
         * output: mode
@@ -32,17 +37,21 @@ def render_animation(data, skeleton, fps, output = 'interactive', bitrate = 1000
     y = 1
     z = 2
 
+    # heuristic; radius defines a sphere around the skeleton root
     radius = torch.max( skeleton.offsets() ).item() * 5
 
     skeleton_parents = skeleton.parents()
 
     # inactive mode
     plt.ioff()
+
+    # 3D plot parameters
     fig = plt.figure( fig_size = (4,4) )
     ax = fig.add_subplot( 1, 1, 1, projection = '3d' )
     ax.view_init( elev = 20, azim = 30 )
+    ax.dist = 7.5                                       # default: 10, 7.5 makes it look closer
 
-    # axes ranges
+    # initialize axes ranges
     ax.set_xlim3d( [-radius/2, radius/2] )
     ax.set_zlim3d( [0, radius] )
     ax.set_limy3d( [-radius/2, radius] )
@@ -53,23 +62,25 @@ def render_animation(data, skeleton, fps, output = 'interactive', bitrate = 1000
     ax.set_yticklabels([])
     ax.set_zticklabels([])
 
-    # view distance
-    ax.dist = 7.5       # default: 10, 7.5 makes it look closer
-
+    # no lines, animation not initialized
     lines = []
     initilized = False
 
-    trajectory = data[:, 0, [0,2]]
+    # trajectory on the XZ plane (floor)
+    trajectory = data[:, 0, [x,z]]
+
+    # mean difference in skeleton position between frames 
     avg_segment_length = np.mean(
         np.linalg.norm( np.diff(trajectory, axis = 0), axis = 1) + 1e-3
     )
     draw_offset = int( 25 / avg_segment_length)
     spline_line, = ax.plot(*trajectory.T)
     camera_pos = trajectory
-    height_offset = np.min(data[:, :, 1])
+    height_offset = np.min(data[:, :, y])
     data = data.copy()
-    data[:,:, 1] -= height_offset
+    data[:,:, y] -= height_offset
 
+    # -------- START : update function -------- #
     def update(frame):
         """
         Description
@@ -85,10 +96,10 @@ def render_animation(data, skeleton, fps, output = 'interactive', bitrate = 1000
 
         # set axes limitis according to trajectory (to camera position)
         ax.set_xlim3d(
-            [ -radius/2 + camera_pos[frame, 0], radius/2 + camera_pos[frame, 0] ]
+            [ -radius/2 + camera_pos[frame, x], radius/2 + camera_pos[frame, x] ]
         )
         ax.set_ylim3d(
-            [ -radius/2 + camera_pos[frame, 1], radius/2 + camera_pos[frame, 1] ]
+            [ -radius/2 + camera_pos[frame, x], radius/2 + camera_pos[frame, x] ]
         )
 
         positions_world = data[frame]
@@ -119,42 +130,48 @@ def render_animation(data, skeleton, fps, output = 'interactive', bitrate = 1000
                     zdir = 'y'
                 )
             
-            l = max( frame - draw_offset, 0)
-            r = min( frame+draw_offset, trajectory.shape[0] )
+        l = max( frame - draw_offset, 0)
+        r = min( frame + draw_offset, trajectory.shape[0] )
 
-            spline_line.set_xdata( trajectory[l:r, 0] )
-            spline_line.set_ydata( np.zeros_like(trajectory[l:r, 0]) )
-            spline_line.set_3d_properties( trajectory[l:r, 1], zdir = 'y')
+        spline_line.set_xdata( trajectory[l:r, 0] )
+        spline_line.set_ydata( np.zeros_like(trajectory[l:r, 0]) )
+        spline_line.set_3d_properties( trajectory[l:r, 1], zdir = 'y')
 
-            initilized = True
+        initilized = True
 
-            # for interactive mode: if we get to the final frame, then close all the figures
-            if output == 'interactive' and frame == data.shape[0] - 1:
-                plt.close('all')
+        # for interactive mode: if we get to the final frame, then close all the figures
+        if output == 'interactive' and frame == data.shape[0] - 1:
+            plt.close('all')
+
+    # --------- END : update function --------- #
             
-            fig.tight_layout()
-            anim = FuncAnimation(
-                fig    ,
-                update ,
-                frames = np.arange(0, data.shape[0]),
-                interval = 1000/fps ,
-                repeat = False
-            )
+    fig.tight_layout()
+    anim = FuncAnimation(
+        fig    ,
+        update ,
+        frames = np.arange(0, data.shape[0]),
+        interval = 1000/fps ,
+        repeat = False
+    )
 
-            if output == 'interactive':
-                plt.show()
-                return anim
-            elif output == 'html':
-                return anim.to_html5_video()
-            elif output.endswith('.mp4'):
-                Writer = writers['ffmpeg']
-                writer = Writer(fps = fps, metadata={}, bitrate=bitrate)
-                anim.save( output, writer = writer )
-            elif output.endswith('.gif'):
-                anim.save(output, dpi=80, writer='imagemagick')
-            else:
-                raise ValueError(
-                    'Unsupported output format (only interactive,  html, .mp4 and .gif)'
-                )
+    if output == 'interactive':
+        plt.show()
+        return anim
+        
+    elif output == 'html':
+        return anim.to_html5_video()
+        
+    elif output.endswith('.mp4'):
+        Writer = writers['ffmpeg']
+        writer = Writer(fps = fps, metadata={}, bitrate=bitrate)
+        anim.save( output, writer = writer )
+        
+    elif output.endswith('.gif'):
+        anim.save(output, dpi=80, writer='imagemagick')
+        
+    else:
+        raise ValueError(
+            'Unsupported output format (only interactive,  html, .mp4 and .gif)'
+        )
             
-            plt.close()
+    plt.close()
