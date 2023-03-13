@@ -117,7 +117,7 @@ class QuaterNet(nn.Module):
             controls = x[:,:, (4*self.num_joints + self.num_outputs):]
             controls = self.relu( self.fc1(controls) )
             controls = self.relu( self.fc2(controls) )
-            x = torch.cat( ( x[:,:, 4*self.num_joints + self.num_outputs], controls), dim = 2 )
+            x = torch.cat( ( x[:,:, :(4*self.num_joints + self.num_outputs)], controls), dim = 2 )
         
         if h is None:
             h = self.h0.expand(-1, x.shape[0], -1).contiguous()
