@@ -57,18 +57,16 @@ class QuaterNet(nn.Module):
         # ---- Only if there are extra input features ---- #
         if num_controls > 0:
 
-            # fully connected layers
+            # ReLU Layers
             fc1_size = 30
             fc2_size = 30
             self.fc1 = nn.Linear(num_controls, fc1_size)
             self.fc2 = nn.Linear(fc1_size, fc2_size)
-
-            # ReLU layer
             self.relu = nn.LeakyReLU(0.05, inplace = True)
-
+        # ------------------------------------------------ #
         else:
             fc2_size = 0
-        # ------------------------------------------------ #
+
 
         # hidden state size
         h_size = 1000
@@ -113,11 +111,13 @@ class QuaterNet(nn.Module):
 
         x_orig = x
 
+        # ---- Only if there are extra input features ---- #
         if self.controls > 0:
             controls = x[:,:, (4*self.num_joints + self.num_outputs):]
             controls = self.relu( self.fc1(controls) )
             controls = self.relu( self.fc2(controls) )
             x = torch.cat( ( x[:,:, :(4*self.num_joints + self.num_outputs)], controls), dim = 2 )
+        # ------------------------------------------------ #
         
         if h is None:
             h = self.h0.expand(-1, x.shape[0], -1).contiguous()
@@ -130,10 +130,9 @@ class QuaterNet(nn.Module):
             x = self.fc( x[:, -1:] )
             x_orig = x_orig[:, -1:]
 
+        # normalize only quaternion rotations
         pre_normalized = x[:, :, :(4*self.num_joints)].contiguous()
         normalized = pre_normalized.view(-1, 4)
-
-
         if self.model_velocities:
             normalized = qmul( normalized, x_orig[:, :, :(4*self.num_joints)].contiguous().view(-1, 4) )
         normalized = F.normalize( normalized, dim = 1 ).veiw( pre_normalized.shape )
