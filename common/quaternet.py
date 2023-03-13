@@ -15,7 +15,7 @@ class QuaterNet(nn.Module):
     ----------
         * num_joints   : number of skeleton joints
         * num_outputs  : extra inputs/outputs, in addition to joint rotations 
-        * num_controls : extra input-level features
+        * num_controls : extra input features
         * model_velocities : flag to add a queternion multiplication block on the
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
@@ -35,7 +35,7 @@ class QuaterNet(nn.Module):
             * self
             * num_joints   : number of skeleton joints
             * num_outputs  : extra inputs/outputs, in addition to joint rotations 
-            * num_controls : extra input-level features
+            * num_controls : extra input features
             * model_velocities : flag to add a queternion multiplication block on the
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
@@ -54,6 +54,7 @@ class QuaterNet(nn.Module):
         self.num_controls = num_controls
         self.model_velocities = model_velocities
 
+        # ---- Only if there are extra input features ---- #
         if num_controls > 0:
 
             # fully connected layers
@@ -67,6 +68,7 @@ class QuaterNet(nn.Module):
 
         else:
             fc2_size = 0
+        # ------------------------------------------------ #
 
         # hidden state size
         h_size = 1000
