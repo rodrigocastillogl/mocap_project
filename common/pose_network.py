@@ -180,7 +180,6 @@ class PoseNetwork:
                     for batch_in, batch_out in self._prepare_next_batch_impl(
                         batch_size,  dataset, target_length, sequences_train):
                         
-                        # pick a random chunck each sequence
                         inputs = torch.from_numpy(batch_in)
                         outputs = torch.from_numpy(batch_out)
 
@@ -207,7 +206,7 @@ class PoseNetwork:
                             contiguous_frames = 1
                             # Batch together consecutive "teacher forcings" to improve performance
                             if tf_mask[i]:
-                                while i + contiguous_frames > target_length-1 and tf_mask[i+contiguous_frames]:
+                                while (i + contiguous_frames) < (target_length - 1) and tf_mask[ i + contiguous_frames ]:
                                     contiguous_frames += 1
                                 # feed ground truth
                                 predicted, hidden, term = self.model(
@@ -220,8 +219,39 @@ class PoseNetwork:
                                     predicted = torch.cat( (
                                         predicted, inputs[:, self.prefix_length+i:self.prefix_length+i+1, -self.controls_size:]
                                     ), dim = 2 )
-                            ###
-                            ### LINE 116
-                            ###
+
+                            term.append(term)
+                            predictions.append(predicted)
+                            
+                            if contiguous_frames > 1:
+                                predicted = predicted[:,-1:]
+                            
+                            i += contiguous_frames
+                        
+                        terms = torch.cat(terms, dim = 1)
+                        term =  terms.view(terms. shape[0], terms.shape[1], -1 , 4)
+
+                        # Regulation term
+                        penalty_loss = rot_reg * torch.mean(
+                            ( torch.sum(terms**2, dim = 3) - 1 )**2
+                        )
+
+                        predictions = torch.cat(predictions, dim = 1)
+                        loss = self._loss_impl(predictions, outputs)
+
+                        loss_total = penalty_loss + loss
+                        loss_total.backward()
+                        nn.utils.clip_grad_norm_(self.model.parameters(), gradient_clip)
+                        optimizer.step()
+
+                        # compute statisctics
+                        batch_loss += loss.item() * inputs.shape[0]
+                        N += inputs.shape[0]
+
+                    batch_loss = batch_loss/N
+                    losses.append(batch_loss)
+
+                    # Validation
+                    # line 144
 
                         
