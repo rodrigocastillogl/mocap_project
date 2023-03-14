@@ -18,10 +18,25 @@ class PoseNetwork:
     Description
     Attributes
     ----------
-        *
+        * translations_size : (num_outputs) extra inputs/outputs, in addition to joint rotations.
+        * controls_size     : (num_controls) extra input features.
+        * model_velocities  : flag to add a queternion multiplication block on the
+                              RNN output to force the network to model velocities
+                              instead of absolute rotations.
+        * model    : Quaternet model.
+        * use_cuda : flag to use CUDA.
+        * prefix_length : ...
+
     Methods
     -------
-        *
+        * __init__() : initializer
+        * cuda() : set use_cuda = True, send model to CUDA.
+        * eval() : set model to evaluation mode.
+        * _prepare_next_batch_impl() : load and next batch.
+        * _loss_impl() : loss fucntion to train.
+        * train() : train model.
+        * save_weights() : save model weights in a dictionary.
+        * load_weights() : load model weights from a dictionary.
     """
     
     def __init__( self, prefix_length, num_joints, num_outputs,
@@ -33,7 +48,7 @@ class PoseNetwork:
             * prefix_length :
             * num_joints    : number of skeleton joints
             * num_outputs   : extra inputs/outputs, in addition to joint rotations 
-            * num_controls  : extra input-level features
+            * num_controls  : extra input features
             * model_velocities : flag to add a queternion multiplication block on the
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
@@ -72,8 +87,8 @@ class PoseNetwork:
 
         self.use_cuda = True
         self.model.cuda()
-        
         return self
+
 
     def eval(self):
         """
@@ -87,9 +102,9 @@ class PoseNetwork:
         """
         
         self.model.eval()
-        
         return self
     
+
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
         """"
         This method must be implemented in the subclass
@@ -103,6 +118,7 @@ class PoseNetwork:
         """
 
         pass
+
 
     def train( self, dataset, target_length, sequences_train,
                sequences_valid, batch_size, n_epochs = 3000, rot_reg = 0.01 ):
@@ -145,6 +161,7 @@ class PoseNetwork:
             inputs_valid = torch.from_numpy(batch_in_valid)
             outputs_valid = torch.from_numpy(batch_out_valid)
 
+            # send to CUDA
             if self.use_cuda:
                 inputs_valid = inputs_valid.cuda()
                 outputs_valid = outputs_valid.cuda()
@@ -177,9 +194,10 @@ class PoseNetwork:
                         predictions = []
 
                         # initialize with prefix
-                        predicted ,hidden, term = self.model(
+                        predicted , hidden, term = self.model(
                             inputs[:, :self.prefix_length], None, True
                         )
+                        # terms = prenormalized
                         terms.append(term)
                         predictions.append(predicted)
 
