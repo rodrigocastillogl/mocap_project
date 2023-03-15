@@ -166,92 +166,168 @@ class PoseNetwork:
                 inputs_valid = inputs_valid.cuda()
                 outputs_valid = outputs_valid.cuda()
             
-            losses = []
-            valid_losses = []
-            gradient_norms = []
-            print("Training for %d epochs" % (n_epochs) )
+        losses = []
+        valid_losses = []
+        gradient_norms = []
+        print("Training for %d epochs" % (n_epochs) )
 
-            start_time = time()
-            start_epoch = 0
-            try:
-                for epoch in range(n_epochs):
-                    batch_loss = 0.0
-                    N = 0
-                    for batch_in, batch_out in self._prepare_next_batch_impl(
-                        batch_size,  dataset, target_length, sequences_train):
+        start_time = time()
+        start_epoch = 0
+        try:
+            for epoch in range(n_epochs):
+                batch_loss = 0.0
+                N = 0
+                for batch_in, batch_out in self._prepare_next_batch_impl(
+                    batch_size,  dataset, target_length, sequences_train):
                         
-                        inputs = torch.from_numpy(batch_in)
-                        outputs = torch.from_numpy(batch_out)
+                    inputs = torch.from_numpy(batch_in)
+                    outputs = torch.from_numpy(batch_out)
 
-                        if self.use_cuda:
-                            inputs = inputs.cuda()
-                            outputs = outputs.cuda()
+                    if self.use_cuda:
+                        inputs = inputs.cuda()
+                        outputs = outputs.cuda()
                         
-                        optimizer.zero_grad()
+                    optimizer.zero_grad()
 
-                        terms = []
-                        predictions = []
+                    terms = []
+                    predictions = []
 
-                        # initialize with prefix
-                        predicted , hidden, term = self.model(
-                            inputs[:, :self.prefix_length], None, True
-                        )
-                        # terms = prenormalized
-                        terms.append(term)
-                        predictions.append(predicted)
+                    # initialize with prefix
+                    predicted , hidden, term = self.model(
+                        inputs[:, :self.prefix_length], None, True
+                    )
+                    # terms = prenormalized
+                    terms.append(term)
+                    predictions.append(predicted)
 
-                        tf_mask = np.random.uniform(size = target_length-1) > teacher_forcing_ratio
-                        i = 0
-                        while i < target_length-1:
-                            contiguous_frames = 1
-                            # Batch together consecutive "teacher forcings" to improve performance
-                            if tf_mask[i]:
-                                while (i + contiguous_frames) < (target_length - 1) and tf_mask[ i + contiguous_frames ]:
-                                    contiguous_frames += 1
-                                # feed ground truth
-                                predicted, hidden, term = self.model(
+                    tf_mask = np.random.uniform(size = target_length-1) > teacher_forcing_ratio
+                    i = 0
+                    while i < target_length-1:
+                        contiguous_frames = 1
+                        # Batch together consecutive "teacher forcings" to improve performance
+                        if tf_mask[i]:
+                            while (i + contiguous_frames) < (target_length - 1) and tf_mask[ i + contiguous_frames ]:
+                                contiguous_frames += 1
+                            # feed ground truth
+                            predicted, hidden, term = self.model(
                                     inputs[:, self.prefix_length+i:self.prefix_length+i+contiguous_frames], hidden, True, True
+                            )
+
+                        else:
+                            # feed own output
+                            if self.controls_size > 0:
+                                predicted = torch.cat( (
+                                    predicted, inputs[:, self.prefix_length+i:self.prefix_length+i+1, -self.controls_size:]
+                                ), dim = 2 )
+
+                        term.append(term)
+                        predictions.append(predicted)
+                            
+                        if contiguous_frames > 1:
+                            predicted = predicted[:,-1:]
+                            
+                        i += contiguous_frames
+                        
+                    terms = torch.cat(terms, dim = 1)
+                    term =  terms.view(terms. shape[0], terms.shape[1], -1 , 4)
+
+                    # Regulation term
+                    penalty_loss = rot_reg * torch.mean(
+                        ( torch.sum(terms**2, dim = 3) - 1 )**2
+                    )
+
+                    predictions = torch.cat(predictions, dim = 1)
+                    loss = self._loss_impl(predictions, outputs)
+
+                    loss_total = penalty_loss + loss
+                    loss_total.backward()
+                    nn.utils.clip_grad_norm_(self.model.parameters(), gradient_clip)
+                    optimizer.step()
+
+                    # compute statisctics
+                    batch_loss += loss.item() * inputs.shape[0]
+                    N += inputs.shape[0]
+
+                batch_loss = batch_loss/N
+                losses.append(batch_loss)
+
+                # Validation
+                if len(sequences_valid) > 0:
+                    with torch.no_grad():
+                        predictions = []
+                        predicted, hidden = self.model(
+                            inputs_valid[:, :self.prefix_length]
+                        )
+                        predictions.append(predicted)
+                        for i in range(target_length - 1):
+                            # Feed own output
+                            if self.controls_size > 0:
+                                predicted = torch.cat(
+                                    ( predicted, inputs_valid[:, (self.prefix_length+i):(self.prefix_length+i+1), - self.controls_size:]), dim =  2 
                                 )
-
-                            else:
-                                # feed own output
-                                if self.controls_size > 0:
-                                    predicted = torch.cat( (
-                                        predicted, inputs[:, self.prefix_length+i:self.prefix_length+i+1, -self.controls_size:]
-                                    ), dim = 2 )
-
-                            term.append(term)
+                            
+                            predicted, hidden = self.model(predicted, hidden)
                             predictions.append(predicted)
                             
-                            if contiguous_frames > 1:
-                                predicted = predicted[:,-1:]
-                            
-                            i += contiguous_frames
-                        
-                        terms = torch.cat(terms, dim = 1)
-                        term =  terms.view(terms. shape[0], terms.shape[1], -1 , 4)
+                        predictions = torch.cat( predictions, dim = 1 )
+                        loss = self._loss_impl(predictions, outputs_valid)
 
-                        # Regulation term
-                        penalty_loss = rot_reg * torch.mean(
-                            ( torch.sum(terms**2, dim = 3) - 1 )**2
+                        valid_loss = loss.item()
+                        valid_losses .append(valid_loss)
+                        print(
+                            '[%d] loss: %.5f valid_loss %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio)
                         )
+                else:
+                    print(
+                        '[%d] loss: %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio)
+                    )
+                    
+                teacher_forcing_ratio *= tf_decay
+                lr *= lr_decay
 
-                        predictions = torch.cat(predictions, dim = 1)
-                        loss = self._loss_impl(predictions, outputs)
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] *= lr_decay
+                    
+                if epoch > 0 and (epoch + 1) % 10 == 0:
+                    next_time = time()
+                    time_per_epoch = (next_time - start_time) / (epoch - start_epoch)
+                    print('Benchmark:', time_per_epoch, 's per epoch')
+                    start_time = next_time
+                    start_epoch = epoch
 
-                        loss_total = penalty_loss + loss
-                        loss_total.backward()
-                        nn.utils.clip_grad_norm_(self.model.parameters(), gradient_clip)
-                        optimizer.step()
+        except KeyboardInterrupt:
+            print('Training aborted.')
+            
+        print('Done.')
 
-                        # compute statisctics
-                        batch_loss += loss.item() * inputs.shape[0]
-                        N += inputs.shape[0]
+        return losses, valid_losses, gradient_norms
+    
 
-                    batch_loss = batch_loss/N
-                    losses.append(batch_loss)
+    def save_weights(self, model_file):
+        """
+        Save model weights in a dictionary.
+        Input
+        -----
+            * model_file : file name.
+        Output
+        ------
+            None 
+        """
+        print('Saving weights to', model_file)
+        torch.save( self.model.state_dict(), model_file )
 
-                    # Validation
-                    # line 144
-
-                        
+    
+    def load_weights(self, model_file):        
+        """
+        Load model weights from a dictionary
+        Input
+        -----
+            * model_file : file name.
+        Output
+        ------
+            None
+        """
+        print('Loadings weights from', model_file)
+        self.model.load_state_dict(
+            torch.load( model_file, map_location = lambda storage, loc:storage)
+        )
