@@ -165,37 +165,44 @@ class PoseNetwork:
             if self.use_cuda:
                 inputs_valid = inputs_valid.cuda()
                 outputs_valid = outputs_valid.cuda()
-            
-        losses = []
-        valid_losses = []
-        gradient_norms = []
-        print("Training for %d epochs" % (n_epochs) )
 
+        # Start training    
+        losses = []             # training loss per epoch
+        valid_losses = []       # validation loss per epoch
+        gradient_norms = []     # gradient norm per epoch
+
+        print("Training for %d epochs" % (n_epochs) )
         start_time = time()
         start_epoch = 0
+
         try:
             for epoch in range(n_epochs):
+                
                 batch_loss = 0.0
                 N = 0
+
                 for batch_in, batch_out in self._prepare_next_batch_impl(
                     batch_size,  dataset, target_length, sequences_train):
-                        
+   
                     inputs = torch.from_numpy(batch_in)
                     outputs = torch.from_numpy(batch_out)
-
                     if self.use_cuda:
                         inputs = inputs.cuda()
                         outputs = outputs.cuda()
                         
                     optimizer.zero_grad()
-
                     terms = []
                     predictions = []
 
-                    # initialize with prefix
+                    # forward propagation
+                        # x = inputs[:, :self.prefix_length]
+                        # h = None
+                        # return_prenorm = True
+                        # return_all = False (default)
                     predicted , hidden, term = self.model(
                         inputs[:, :self.prefix_length], None, True
                     )
+                    
                     # terms = prenormalized
                     terms.append(term)
                     predictions.append(predicted)
