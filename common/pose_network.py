@@ -65,7 +65,7 @@ class PoseNetwork:
         self.prefix_length = prefix_length
 
         # QuaterNet model
-        self.model = QuaterNet( num_joints, num_outputs, num_controls, model_velocities)
+        self.model = QuaterNet( num_joints, num_outputs, num_controls, model_velocities )
 
         # count and display the number of parameters in the model
         dec_params = 0
@@ -132,7 +132,7 @@ class PoseNetwork:
             * sequences_valid : sequences used for validation
             * batch_size : batch size during training
             * n_epoch : number of epochs during training
-            * rot_reg :
+            * rot_reg : regularization parameter to force quaterions to be unitary.
         Output
         ------
             * losses : training loss
