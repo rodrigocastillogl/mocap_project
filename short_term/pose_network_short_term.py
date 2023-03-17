@@ -93,25 +93,30 @@ class PoseNetworkShortTerm(PoseNetwork):
                 batch_idx = 0
 
 
-        def _loss_impl(self, predicted, expected):
-            """
-            Loss function.
-            Input
-            -----
-                * predicted : predicted sequence; Quaternions.
-                * expected : ground truth sequence; Euler angles.
-            Output
-            ------
-                * Loss
-            """
+    def _loss_impl(self, predicted, expected):
+        """
+        Loss function.
+        Input
+        -----
+            * predicted : predicted sequence; Quaternions.
+            * expected : ground truth sequence; Euler angles.
+        Output
+        ------
+            * Loss
+        """
 
-            super._loss_impl(predicted, expected)
+        super._loss_impl(predicted, expected)
 
-            predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-            expected_euler = expected.view(expected.shape[0], expected.shape[1], -1, 3 )
-            predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
+        predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+        expected_euler = expected.view(expected.shape[0], expected.shape[1], -1, 3 )
+        predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
 
-            # L1 loss angle distance with 2pi wrap-around
-            angle_distance = torch.reminder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
+        # L1 loss angle distance with 2pi wrap-around
+        angle_distance = torch.reminder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
 
-            return torch.mean( torch.abs(angle_distance) )
+        return torch.mean( torch.abs(angle_distance) )
+
+
+    def predict(self, prefix, target_length):
+        """
+        """
