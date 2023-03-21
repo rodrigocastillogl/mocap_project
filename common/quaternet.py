@@ -13,9 +13,9 @@ class QuaterNet(nn.Module):
     QuaterNet general architecture.
     Attributes
     ----------
-        * num_joints   : number of skeleton joints
-        * num_outputs  : extra inputs/outputs, in addition to joint rotations 
-        * num_controls : extra input features
+        * num_joints   : number of skeleton joints.
+        * num_outputs  : extra inputs/outputs, in addition to joint rotations.
+        * num_controls : extra input features.
         * model_velocities : flag to add a queternion multiplication block on the
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
@@ -29,13 +29,12 @@ class QuaterNet(nn.Module):
     def __init__( self, num_joints, num_outputs = 0,
                   num_controls = 0, model_velocities = False ):
         """
-        Initializer
+        QuaterNet Constructor.
         Input
         -----
-            * self
-            * num_joints   : number of skeleton joints
-            * num_outputs  : extra inputs/outputs, in addition to joint rotations 
-            * num_controls : extra input features
+            * num_joints   : number of skeleton joints.
+            * num_outputs  : extra inputs/outputs, in addition to joint rotations.
+            * num_controls : extra input features.
             * model_velocities : flag to add a queternion multiplication block on the
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
@@ -56,7 +55,6 @@ class QuaterNet(nn.Module):
 
         # ---- Only if there are extra input features ---- #
         if num_controls > 0:
-
             # ReLU Layers
             fc1_size = 30
             fc2_size = 30
@@ -94,7 +92,6 @@ class QuaterNet(nn.Module):
         Forward propagation.
         Input
         ------
-            * self
             * x : input tensor
                   size = ( batch_size, sequence_length, 4 * num_joints + num_outputs + fc2_size)
             * h : hidden state; if None, it returns to the learned initial state
@@ -113,10 +110,10 @@ class QuaterNet(nn.Module):
 
         # ---- Only if there are extra input features ---- #
         if self.controls > 0:
-            controls = x[:,:, (4*self.num_joints + self.num_outputs):]
+            controls = x[:, :, (4*self.num_joints + self.num_outputs):]
             controls = self.relu( self.fc1(controls) )
             controls = self.relu( self.fc2(controls) )
-            x = torch.cat( ( x[:,:, :(4*self.num_joints + self.num_outputs)], controls), dim = 2 )
+            x = torch.cat( ( x[:, :, :(4*self.num_joints + self.num_outputs)], controls), dim = 2 )
         # ------------------------------------------------ #
         
         if h is None:
@@ -135,7 +132,7 @@ class QuaterNet(nn.Module):
         normalized = pre_normalized.view(-1, 4)
         if self.model_velocities:
             normalized = qmul( normalized, x_orig[:, :, :(4*self.num_joints)].contiguous().view(-1, 4) )
-        normalized = F.normalize( normalized, dim = 1 ).veiw( pre_normalized.shape )
+        normalized = F.normalize( normalized, dim = 1 ).view( pre_normalized.shape )
 
         if self.num_outputs > 0:
             x = torch.cat( (normalized, x[:, :, (4*self.num_joints):]), dim = 2 )
@@ -146,5 +143,3 @@ class QuaterNet(nn.Module):
             return x, h, pre_normalized
         else:
             return x, h
-        
-        

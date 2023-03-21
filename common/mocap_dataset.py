@@ -35,7 +35,7 @@ class MocapDataset:
 
     def __init__(self, path, skeleton, fps):
         """
-        MocapDataset initiaizer
+        MocapDataset constructor.
         Input
         -----
             * path : dataset path (.npz file format)
