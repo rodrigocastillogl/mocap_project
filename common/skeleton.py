@@ -19,7 +19,18 @@ class Skeleton:
         * joints_rights : right joints indices.
     Methods
     -------
-        * d
+        * __init__()
+        * cuda()
+        * num_joints()
+        * offsets()
+        * parents()
+        * has_children()
+        * children()
+        * remove_joints()
+        * forward_kinematics()
+        * joints_left()
+        * joints_right()
+        * _compute_metadata()
     """
 
     def __init__(self, offsets, parents, joints_left = None, joints_right = None):

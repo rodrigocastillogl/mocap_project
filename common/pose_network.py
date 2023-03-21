@@ -29,14 +29,14 @@ class PoseNetwork:
 
     Methods
     -------
-        * __init__() : initializer
-        * cuda() : set use_cuda = True, send model to CUDA.
-        * eval() : set model to evaluation mode.
-        * _prepare_next_batch_impl() : load and next batch.
-        * _loss_impl() : loss fucntion to train.
-        * train() : train model.
-        * save_weights() : save model weights in a dictionary.
-        * load_weights() : load model weights from a dictionary.
+        * __init__()
+        * cuda()
+        * eval()
+        * _prepare_next_batch_impl()
+        * _loss_impl()
+        * train()
+        * save_weights()
+        * load_weights()
     """
     
     def __init__( self, prefix_length, num_joints, num_outputs,
