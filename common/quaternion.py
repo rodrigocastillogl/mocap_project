@@ -144,7 +144,7 @@ def qmul_np(q, r):
     q = torch.from_numpy(q).contiguous()
     r = torch.from_numpy(r).contiguous()
 
-    return qrot(q, r).numpy()
+    return qmul(q, r).numpy()
 
 
 def qrot_np(q, v):
@@ -165,6 +165,7 @@ def qrot_np(q, v):
     v = torch.from_numpy(v).contiguous()
 
     return qrot(q, v).numpy()
+
 
 def qeuler_np(q, order, epsilon = 0, use_gpu = False):
     """
@@ -215,10 +216,11 @@ def qfix(q):
     # minimal euclidean distance is equivalent to minimal dot product
     dot_products = np.sum( q[1:]*q[:-1], axis = 2 )
     mask  = dot_products < 0
-    mask =  ( np.cumsum(mask, axis = 0) ).astype(bool)
+    mask =  ( np.cumsum(mask, axis = 0)%2 ).astype(bool)
     result[1:][mask] *= -1
 
     return result
+
 
 def expmap_to_quaternion(e):
     """
