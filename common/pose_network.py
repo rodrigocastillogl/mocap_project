@@ -3,7 +3,6 @@
 # https://github.com/facebookresearch/QuaterNet
 # ---------------------------------------------- #
 
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -76,7 +75,7 @@ class PoseNetwork:
     
     def cuda(self):
         """
-        Enable CUDA
+        Enable CUDA.
         Input
         -----
             None
@@ -92,7 +91,7 @@ class PoseNetwork:
 
     def eval(self):
         """
-        Sets model un Evaluation mode
+        Sets model in Evaluation mode.
         Input
         -----
             None
