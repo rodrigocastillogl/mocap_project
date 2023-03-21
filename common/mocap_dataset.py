@@ -18,19 +18,19 @@ class MocapDataset:
         * _skeleton : skeleton object
     Methods
     -------
-        *__getitem(__() :
-        * _load() :
-        * _mirror_sequence():
-        * cuda()  :
-        * downsample() :
-        * mirror() :
-        * compute_euler_angles() :
-        * compute_positions() :
-        * subjects() :
-        * subject_actions() :
-        * all_actions() :
-        * fps() :
-        * skeleton() :
+        *__getitem__
+        * _load
+        * _mirror_sequence
+        * cuda
+        * downsample
+        * mirror
+        * compute_euler_angles
+        * compute_positions
+        * subjects
+        * subject_actions
+        * all_actions
+        * fps
+        * skeleton
     """
 
     def __init__(self, path, skeleton, fps):
@@ -52,10 +52,11 @@ class MocapDataset:
         self._skeleton = skeleton
         self._fps = fps
         self._use_gpu = False
+
     
     def cuda(self):
         """
-        Send skeleton to CUDA memory.
+        Send skeleton to CUDA memory; set self._use_cuda = True
         Input
         -----
             None
@@ -68,6 +69,7 @@ class MocapDataset:
         self._skeleton.cuda()
 
         return self
+    
     
     def _load(self, path):
         """
@@ -106,6 +108,7 @@ class MocapDataset:
         
         return result
     
+    
     def downsample(self, factor, keep_strides = True):
         """
         Downsample data by an integer factor, keeping all strides of the data
@@ -128,7 +131,7 @@ class MocapDataset:
             new_actions = {}
 
             # for every action
-            for action in list( subject.keys() ):
+            for action in list( self._data[subject].keys() ):
 
                 # to keep all strides
                 for idx in range(factor):
@@ -150,12 +153,14 @@ class MocapDataset:
         # update sampling rate
         self._fps //= factor
 
+
     def _mirror_sequence(self, sequence):
         """
-        Description
+        Mirror a skeleton motion sequence along the X-axis
+        (https://stackoverflow.com/questions/32438252/efficient-way-to-apply-mirror-effect-on-quaternion-rotation)
         Input
         -----
-            * sequence : 
+            * sequence : skeleton sequence; Quaternions
         Output
         ------
             mirror sequence
@@ -179,6 +184,7 @@ class MocapDataset:
             'trajectory': mirrored_trajectory
         }
     
+    
     def mirror(self):
         """
         Data augmentation by mirroring every sequence in the data set.
@@ -194,7 +200,7 @@ class MocapDataset:
         # for every subject
         for subject in self._data.keys():
             # for every action
-            for action in list( subject.keys() ):
+            for action in list( self._data[subject].keys() ):
                 
                 if '_m' in action: # already mirrored sequence
                     continue
@@ -204,10 +210,11 @@ class MocapDataset:
                     self._data[subject][action]
                 )
     
+    
     def compute_euler_angles(self, order):
         """
-        Compute Euler angles parameterization for every sequences.
-        Add a new key to every action in self.data: 'rorations_euler'.
+        Compute Euler angles parameterization for every sequence.
+        Add a new key to every action in self.data: 'rotations_euler'.
         Input
         -----
             * order : order of rotations in Euler angles
@@ -223,6 +230,7 @@ class MocapDataset:
                 action['rotation_euler'] = qeuler_np(
                     action['rotations'], order, use_gpu = self._use_gpu
                 )
+
 
     def compute_positions(self):
         """
@@ -248,16 +256,16 @@ class MocapDataset:
                     rotations.cuda()
                     trajectory.cuda()
                 
-                action['position_world'] = self._skeleton.forward_kinematics(rotations, trajectory).squeeze(0).cpu().numpy()
+                action['positions_world'] = self._skeleton.forward_kinematics(rotations, trajectory).squeeze(0).cpu().numpy()
 
                 # Absolute translations across the XY plane are removed
                 trajectory[:, :, [0,2]] = 0
-                action['position_local'] = self._skeleton.forward_kinematics(rotations, trajectory).squeeze(0).cpu().numpy()
+                action['positions_local'] = self._skeleton.forward_kinematics(rotations, trajectory).squeeze(0).cpu().numpy()
     
 
     def __getitem__(self, key):
         """
-        Return the subject dictionary specified by key
+        Return the subject dictionary specified by key.
         Input
         -----
             * key: subject name in dataset
@@ -329,6 +337,7 @@ class MocapDataset:
         """
 
         return self._fps
+    
     
     def skeleton(self):
         """
