@@ -10,10 +10,13 @@ from common.quaternion import qmul_np, qmul, qrot
 class Skeleton:
 
     """
-    Class to handle skeleton hierarchical data
+    Class to handle skeleton hierarchical data.
     Attributes
     ----------
-        * d
+        * offsets : joint relative offsets in reference position.
+        * parents : parent indices.
+        * joints_left : left joints indices.
+        * joints_rights : right joints indices.
     Methods
     -------
         * d
@@ -24,10 +27,12 @@ class Skeleton:
         Skeleton initializer
         Input
         -----
-            * offsets
-            * parents
-            * joints_left
-            * joints_right
+            * offsets : joint relative offsets in reference position.
+            * parents : parent indices.
+            * joints_left   : left joints indices.
+            * joints_rights : right joints indices.
+            * _children : indices of joint children.
+            * _has_children : boolean array, 1 if the joint has children, 0 if not
         Output
         ------
             None
@@ -42,6 +47,7 @@ class Skeleton:
         self._joints_right = joints_right
         self._compute_metadata()
 
+
     def cuda(self):
         
         """
@@ -53,32 +59,31 @@ class Skeleton:
         ------
             * Self
         """
-
         self._offsets = self._offsets.cuda()
-
         return self
     
+
     def num_joints(self):
         """
         Return the number of joints in the skeleton
         """
-
         return self._offsets.shape[0]
     
+
     def offsets(self):
         """
         Return the offsets of the skeleton
         """
-
         return self._offsets
     
+
     def parents(self):
         """
         Return the parents of the skeleton
         """
-
         return self._parents
     
+
     def has_children(self):
         """
         Return a boolean array: 1 if the joint has children, 0 if not
@@ -89,16 +94,16 @@ class Skeleton:
         ------
             Boolean array: 1 if the joint has children, 0 if not
         """
-
         return self._has_children
     
+
     def children(self):
         """
         Return joints' children
         """
-
         return self._children
     
+
     def remove_joints(self, joints_to_remove, dataset):
         """
         Remove joints specified in joints_to_remove, both from the skeleton
@@ -191,25 +196,32 @@ class Skeleton:
                 else:
                     rotations_world.append(None)
                 
-        return torch.stack( positions_world, dim = 3 ).permute( 0 ,1, 3, 2 )
+        return torch.stack( positions_world, dim = 3 ).permute( 0, 1, 3, 2 )
+
 
     def joints_left(self):
         """
         Return skeleton left joints
         """
-        
         return self._joints_left
     
+
     def joints_right(self):
         """
         Return skeleton right joints
         """
-        
         return self._joints_right
+
 
     def _compute_metadata(self):
         """
-        Description
+        Compute self._children and slef._has_children.
+        Input
+        -----
+            None
+        Output
+        ------
+            None
         """
         
         self._has_children = np.zeros( len( self._parents) ).astype(bool)
