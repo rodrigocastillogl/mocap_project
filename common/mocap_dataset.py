@@ -138,7 +138,7 @@ class MocapDataset:
                     tup = {}
 
                     # for rotations and trayectory
-                    for k in self._data[subject][action].key():
+                    for k in self._data[subject][action].keys():
                         tup[k] = self._data[subject][action][k][idx::factor]
                     
                     new_actions[ action + '_d' + str(idx) ] = tup
