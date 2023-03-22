@@ -18,11 +18,11 @@ perform_validation = False
 
 if perform_validation:
     subjects_train = ['S1', 'S7', 'S8', 'S9', 'S11']
-    subjects_validation = ['S6']
+    subjects_valid = ['S6']
     subjects_test = ['S5']
 else:
     subjects_train = ['S1', 'S6', 'S7', 'S8', 'S9', 'S11']
-    subjects_validation = [ ]
+    subjects_valid = [ ]
     subjects_test = ['S5']
 
 # Directories
