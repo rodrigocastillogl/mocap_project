@@ -198,6 +198,7 @@ class PoseNetwork:
                         # h = None
                         # return_prenorm = True
                         # return_all = False (default)
+                    print(inputs[:, :self.prefix_length].shape)
                     predicted , hidden, term = self.model(
                         inputs[:, :self.prefix_length], None, True
                     )
