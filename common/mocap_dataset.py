@@ -87,7 +87,7 @@ class MocapDataset:
         # dictiorary with subjects
         result = {}
 
-        data = np.load(path, 'r')
+        data = np.load(path, 'r', allow_pickle = True )
         for i, (trajectory, rotations, subject, action) in enumerate(
             zip( data['trajectories'] ,
                  data['rotations']    ,
