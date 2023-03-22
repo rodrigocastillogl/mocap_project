@@ -24,13 +24,14 @@ class PoseNetworkShortTerm(PoseNetwork):
 
     Methods
     -------
-        * cuda() : set use_cuda = True, send model to CUDA.
-        * eval() : set model to evaluation mode.
-        * _prepare_next_batch_impl() : load and next batch.
-        * _loss_impl() : loss fucntion to train.
-        * train() : train model.
-        * save_weights() : save model weights in a dictionary.
-        * load_weights() : load model weights from a dictionary.
+        * __init__()
+        * cuda()
+        * eval()
+        * _prepare_next_batch_impl()
+        * _loss_impl()
+        * train()
+        * save_weights()
+        * load_weights()
         * predict()
     """
 
@@ -108,7 +109,7 @@ class PoseNetworkShortTerm(PoseNetwork):
         super._loss_impl(predicted, expected)
 
         predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        expected_euler = expected.view(expected.shape[0], expected.shape[1], -1, 3 )
+        expected_euler = expected.view(predicted.shape[0], predicted.shape[1], -1, 3 )
         predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
 
         # L1 loss angle distance with 2pi wrap-around
@@ -134,12 +135,11 @@ class PoseNetworkShortTerm(PoseNetwork):
         
         with torch.no_grad():
             # quaternions --> euler angle --> quaternions  
-            prefix = prefix.reshape( prefix.shape[0], -1 , 4 )
+            prefix = prefix.reshape( prefix.shape[1], -1 , 4 )
             prefix = qeuler_np( prefix, 'zyx' )
             prefix = qfix( euler_to_quaternion(prefix, 'zyx') )
             inputs = torch.from_numpy(
                 prefix.reshape(1, prefix.shape[0], -1).astype('float32')
-
             )
 
             # input to cuda
