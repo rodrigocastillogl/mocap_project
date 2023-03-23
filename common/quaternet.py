@@ -109,7 +109,7 @@ class QuaterNet(nn.Module):
         x_orig = x
 
         # ---- Only if there are extra input features ---- #
-        if self.controls > 0:
+        if self.num_controls > 0:
             controls = x[:, :, (4*self.num_joints + self.num_outputs):]
             controls = self.relu( self.fc1(controls) )
             controls = self.relu( self.fc2(controls) )
