@@ -226,7 +226,7 @@ class PoseNetwork:
                                     predicted, inputs[:, self.prefix_length+i:self.prefix_length+i+1, -self.controls_size:]
                                 ), dim = 2 )
 
-                        term.append(term)
+                        terms.append(term)
                         predictions.append(predicted)
                             
                         if contiguous_frames > 1:
