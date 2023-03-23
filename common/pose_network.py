@@ -235,7 +235,7 @@ class PoseNetwork:
                         i += contiguous_frames
                         
                     terms = torch.cat(terms, dim = 1)
-                    term =  terms.view(terms. shape[0], terms.shape[1], -1 , 4)
+                    terms =  terms.view(terms. shape[0], terms.shape[1], -1 , 4)
 
                     # Regulation term
                     penalty_loss = rot_reg * torch.mean(
