@@ -113,7 +113,7 @@ class PoseNetworkShortTerm(PoseNetwork):
         predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
 
         # L1 loss angle distance with 2pi wrap-around
-        angle_distance = torch.reminder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
+        angle_distance = torch.remainder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
 
         return torch.mean( torch.abs(angle_distance) )
 
