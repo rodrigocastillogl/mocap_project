@@ -106,7 +106,7 @@ class PoseNetworkShortTerm(PoseNetwork):
             * Loss
         """
 
-        super._loss_impl(predicted, expected)
+        super()._loss_impl(predicted, expected)
 
         predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
         expected_euler = expected.view(predicted.shape[0], predicted.shape[1], -1, 3 )
