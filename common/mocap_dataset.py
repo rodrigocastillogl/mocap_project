@@ -101,7 +101,7 @@ class MocapDataset:
             
             # every action is a dictionary with two keys:
             # rotations and trajectory
-            result[subject]['action'] = {
+            result[subject][action] = {
                 'rotations' : rotations,
                 'trajectory' : trajectory
             }
