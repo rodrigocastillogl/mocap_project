@@ -123,6 +123,7 @@ def evaluate(model, test_data):
                 np.expand_dims(source, 0), target_length = np.max(frame_targets) + 1
             ).reshape(-1, 32*4)
         
+        target = qeuler_np( target[:target_predicted.shape[0]].reshape(-1,4), 'zyx' ).reshape(-1, 996)
         target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1,96)
         e = np.sqrt( np.sum( (target_predicted[:,3:] - target[:,3:] )**2, axis = 1 ) )
         errors.append(e)
