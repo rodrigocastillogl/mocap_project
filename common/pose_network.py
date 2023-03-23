@@ -206,7 +206,7 @@ class PoseNetwork:
                     terms.append(term)
                     predictions.append(predicted)
 
-                    tf_mask = np.random.uniform(size = target_length-1) > teacher_forcing_ratio
+                    tf_mask = np.random.uniform(size = target_length-1) < teacher_forcing_ratio
                     i = 0
                     while i < target_length-1:
                         contiguous_frames = 1
