@@ -122,6 +122,13 @@ def evaluate(model, test_data):
             target_predicted = model.predict(
                 np.expand_dims(source, 0), target_length = np.max(frame_targets) + 1
             ).reshape(-1, 32*4)
+        
+        target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1,96)
+        e = np.sqrt( np.sum( (target_predicted[:,3:] - target[:,3:] )**2, axis = 1 ) )
+        errors.append(e)
+    errors = np.mean( np.array(errors), axis = 0 )
+    
+    return errors
 
 
 frame_targets = [1, 3, 7, 9, 14, 19, 24, 49, 74, 99] # 80, 160, 320, and 400 ms (at 25 Hz)
