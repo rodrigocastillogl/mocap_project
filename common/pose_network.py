@@ -225,6 +225,7 @@ class PoseNetwork:
                                 predicted = torch.cat( (
                                     predicted, inputs[:, self.prefix_length+i:self.prefix_length+i+1, -self.controls_size:]
                                 ), dim = 2 )
+                            predicted, hidden, term = self.model(predicted, hidden, True)
 
                         terms.append(term)
                         predictions.append(predicted)
@@ -279,7 +280,7 @@ class PoseNetwork:
                         loss = self._loss_impl(predictions, outputs_valid)
 
                         valid_loss = loss.item()
-                        valid_losses .append(valid_loss)
+                        valid_losses.append(valid_loss)
                         print(
                             '[%d] loss: %.5f valid_loss %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio)
                         )
