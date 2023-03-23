@@ -144,7 +144,7 @@ class PoseNetwork:
         # set model in training mode
         self.model.train()
 
-        lr = 0.0001                # learning rate
+        lr = 0.001                # learning rate
         lr_decay = 0.999           # learning rate decay factor
         batch_size_valid = 30      # batch size during validation step
         teacher_forcing_ratio = 1  # starts by forcing the ground truth 
