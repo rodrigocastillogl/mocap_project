@@ -86,8 +86,7 @@ def get_test_data(data, action, subject):
     indices = find_inidices_srnn(seq_map, action, subject, num_seeds, prefix_length, target_length)
 
     seeds = [ ( action, (i%2)+1, indices[i] ) for i in range(num_seeds) ]
-    print(seeds)
-    
+
     out = []
     for i in range(num_seeds):
         _, subsequence, idx = seeds[i]
