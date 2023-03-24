@@ -138,7 +138,6 @@ def evaluate(model, test_data):
 frame_targets = [1, 3, 7, 9, 14, 19, 24, 49, 74, 99] # 80, 160, 320, and 400 ms (at 25 Hz)
 all_errors = np.zeros((15, 100))
 
-
 def print_results(action, errors):
     """
     Display errors during evaluation.
