@@ -177,6 +177,7 @@ def run_evaluation( model = None ):
         print()
         for idx, action in enumerate( actions ):
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
+            print(test_data)
             errors = evaluate(model, test_data)
             all_errors[idx] = errors
             print_results(action, errors)
