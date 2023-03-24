@@ -15,6 +15,7 @@ torch.manual_seed(1234)
 def find_inidices_srnn( data, action, subject, num_seeds, prefix_length, target_length ):
     """
     Description.
+    From: https://github.com/una-dinosauria/human-motion-prediction
     Input
     -----
         * data   :
@@ -44,6 +45,7 @@ def find_inidices_srnn( data, action, subject, num_seeds, prefix_length, target_
 def build_sequence_map_srnn(data):
     """
     Description
+    From: https://github.com/una-dinosauria/human-motion-prediction
     Input
     -----
         * data :
@@ -66,6 +68,7 @@ def build_sequence_map_srnn(data):
 def get_test_data(data, action, subject):
     """
     Description.
+    From: https://github.com/una-dinosauria/human-motion-prediction
     Input
     -----
         * data    :
