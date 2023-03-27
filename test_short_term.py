@@ -140,7 +140,6 @@ def evaluate(model, test_data):
         target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1,96)
         e = np.sqrt( np.sum( (target_predicted[:,3:] - target[:,3:] )**2, axis = 1 ) )
         errors.append(e)
-    print(len(errors))
     errors = np.mean( np.array(errors), axis = 0 )
     
     return errors
