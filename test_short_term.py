@@ -14,23 +14,27 @@ torch.manual_seed(1234)
 
 def find_inidices_srnn( data, action, subject, num_seeds, prefix_length, target_length ):
     """
-    Description.
+    Given a data map generated with build_sequence_map_srnn(), return the starting indices
+    to get input prefixes to test the model.
     From: https://github.com/una-dinosauria/human-motion-prediction
     Input
     -----
-        * data   :
-        * action :
-        * subject   :
-        * num_seeds :
-        * prefix_length :
+        * data   : dataset generated with build_sequence_map_srnn()
+        * action : action name.
+        * subject   : subject number.
+        * num_seeds : sequences generated.
+        * prefix_length : input sequence length.
+        * target_length : output sequence length.
     Output
     ------
-        * idx :
+        * idx : starting indices for test prefixes.
     """
 
     rnd = np.random.RandomState(1234567890)
 
-    # A subject performs the same action twice in the Human3.6M dataset
+    # A subject performs the same action twice in the Human3.6M dataset.
+    # since actions were downsampled by a factor of 2, keepeng all strides,
+    # there are two sequences for every action
     T1 = data[(subject, action, 1)].shape[0]
     T2 = data[(subject, action, 2)].shape[0]
 
@@ -44,21 +48,25 @@ def find_inidices_srnn( data, action, subject, num_seeds, prefix_length, target_
 
 def build_sequence_map_srnn(data):
     """
-    Description
+    Return rotations sequences to test.
     From: https://github.com/una-dinosauria/human-motion-prediction
     Input
     -----
-        * data :
+        * data : dataset object.
+        (dictionary) data -> subject -> action -> rotations, trajectory, etc.
     Output
     ------
-        * out :
+        * out : rotations sequence in a dictionary.
+        (subject number, action name, action number) -> rotations
     """
 
     out = {}
     for subject in data.subjects():
         for action, seq in data[subject].items():
+            # do nothing if: it is not a repeated action (or downsampled) or it is mirrored.
             if not '_d0' in action or '_m' in action:
                 continue
+            # action in 'data' only if it is a repeated action (or downsampled).
             act, sub, _ = action.split('_')
             out[ ( int(subject[1:]), act, int(sub) ) ] = seq['rotations']
     
@@ -67,16 +75,16 @@ def build_sequence_map_srnn(data):
 
 def get_test_data(data, action, subject):
     """
-    Description.
+    Generate test sequences chunks.
     From: https://github.com/una-dinosauria/human-motion-prediction
     Input
     -----
-        * data    :
-        * action  :
-        * subject :
+        * data    : dataset object.
+        * action  : action name.
+        * subject : subject number.
     Output
     ------
-        * out :
+        * out : test chunks.
     """
 
     seq_map = build_sequence_map_srnn(data)
@@ -85,6 +93,8 @@ def get_test_data(data, action, subject):
     target_length = 100
     indices = find_inidices_srnn(seq_map, action, subject, num_seeds, prefix_length, target_length)
 
+    # since actions were downsampled by a factor of 2, keepeng all strides,
+    # there are two sequences for every action 
     seeds = [ ( action, (i%2)+1, indices[i] ) for i in range(num_seeds) ]
 
     out = []
@@ -94,9 +104,9 @@ def get_test_data(data, action, subject):
         chunk = seq_map[ (subject, action, subsequence) ]
         chunk = chunk[ (idx-prefix_length):(idx+target_length), : ]
         out.append( (
-            chunk[0:(prefix_length-1), :],
-            chunk[(prefix_length-1):(prefix_length+target_length-1), :],
-            chunk[prefix_length:, :]
+            chunk[0:(prefix_length-1), :],                                 # Input
+            chunk[(prefix_length-1):(prefix_length+target_length-1), :],   # Target
+            chunk[prefix_length:, :]                                       # ??
         ) )
 
     return out
@@ -107,14 +117,14 @@ def evaluate(model, test_data):
     Run evaluation of the model.
     Input
     -----
-        * model
-        * test_data
+        * model     : pre-trained ShortTermPoseNetwork model.
+        * test_data : test data generated with get_test_data().
     Output
     ------
-        * errors
+        * errors : Root Mean Squared Error (Euler angles).
     """
 
-    errors =[]
+    errors = []
     for d in test_data:
         source = np.concatenate( (d[0], d[1][:1]), axis = 0).reshape(-1, 32*4)
         target = d[2].reshape(-1, 32*4)
