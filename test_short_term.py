@@ -33,7 +33,7 @@ def find_inidices_srnn( data, action, subject, num_seeds, prefix_length, target_
     rnd = np.random.RandomState(1234567890)
 
     # A subject performs the same action twice in the Human3.6M dataset.
-    # since actions were downsampled by a factor of 2, keepeng all strides,
+    # since actions were downsampled by a factor of 2, keeping all strides,
     # there are two sequences for every action
     T1 = data[(subject, action, 1)].shape[0]
     T2 = data[(subject, action, 2)].shape[0]
@@ -93,7 +93,7 @@ def get_test_data(data, action, subject):
     target_length = 100
     indices = find_inidices_srnn(seq_map, action, subject, num_seeds, prefix_length, target_length)
 
-    # since actions were downsampled by a factor of 2, keepeng all strides,
+    # since actions were downsampled by a factor of 2, keeping all strides,
     # there are two sequences for every action 
     seeds = [ ( action, (i%2)+1, indices[i] ) for i in range(num_seeds) ]
 
@@ -140,6 +140,7 @@ def evaluate(model, test_data):
         target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1,96)
         e = np.sqrt( np.sum( (target_predicted[:,3:] - target[:,3:] )**2, axis = 1 ) )
         errors.append(e)
+    print(len(errors))
     errors = np.mean( np.array(errors), axis = 0 )
     
     return errors
@@ -185,6 +186,7 @@ def run_evaluation( model = None ):
         print( 'Testing on subject ' + subject_test )
         print()
         for idx, action in enumerate( actions ):
+            
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
             errors = evaluate(model, test_data)
             all_errors[idx] = errors
