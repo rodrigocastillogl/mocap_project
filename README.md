@@ -36,3 +36,42 @@ To test the model:
     python test_short_term.py
 
 ## Files description
+
+* common/
+
+    * **quaternion.py**
+        
+        Quaternion methods implementation for *Pytorch* tensors and *NumPy* arrays:
+        qmul, qrot, qeuler, qfix, expmap_to_quaternion, euler_to_quaternion.
+
+    * **skeleton.py**
+
+    * **mocap_dataset.py**
+        
+        * `class MocapDataset`: Dataset object for Motion Capture
+        
+            You can load MoCap data using this class. It is stored in a dictironary with the following structure:
+
+            `self._data` -> `subject` -> `action` -> `rotations`, `trajectory`, `positions`, `euler_angles`.
+
+            It has a `Skeleton` object as attribute where offsets and hierarchy are defined.
+            Then , data from all subjects in the dataset are fitted to this skeleton.
+
+            `MocapSatset['subject']` returns data of `'subject'`, which is a dictionary of actions, etc.
+
+    * **quaternet.py**
+
+    * **pose_network.py**
+    
+    * **visualization.py**
+    
+* short_term/
+
+    * **dataset_h36m.py**
+    * **pose_network_short_term.py**
+
+* **prepare_data_short_term.py**
+
+* **train_short_term.py**
+
+* **test_short_term.py**
