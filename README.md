@@ -87,12 +87,12 @@ To test the model:
 
             Declaration of: `_prepare_next_batch_impl` (load batch method) and `_loss_impl` (loss function).
             
-            Definition of `train`, `load_weights` and `save_weights` methods, .
+            Definition of `train`, `load_weights` and `save_weights` methods.
 
     
     * **visualization.py**
 
-        * *Matplotlib* based methods to display skeleton motion.
+        * *Matplotlib* based methods to display/save skeleton motion animations.
     
 * short_term/
 
@@ -113,6 +113,11 @@ To test the model:
             Defines the `predict` method: given an input sequence, predicts the next sequence of poses (evaluates the model with `no_grad`).
 
 * **prepare_data_short_term.py**
+
+    * Downloads [H3.6M Dataset](http://www.cs.stanford.edu/people/ashesh/h3.6m.zip) in Exponential map parameterization (as used in [Martínez, et. al. 2017](https://arxiv.org/abs/1705.02445)).
+    
+    * Transforms data to quaternion parameterization and saves it in `datasets/h3.6m`.
+
 
 * **train_short_term.py**
 
