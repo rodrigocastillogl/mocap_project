@@ -41,10 +41,17 @@ To test the model:
 
     * **quaternion.py**
         
-        Quaternion methods implementation for *Pytorch* tensors and *NumPy* arrays:
-        qmul, qrot, qeuler, qfix, expmap_to_quaternion, euler_to_quaternion.
+        * Implementation of quaternion methods for *Pytorch* tensors and *NumPy* arrays:
+        `qmul`, `qrot`, `qeuler`, `qfix`, `expmap_to_quaternion`, `euler_to_quaternion`.
 
     * **skeleton.py**
+
+        * `class Skeleton`
+        
+            Defines a parameterized skeleton for Mocap data, by means of  the following attributes:
+            `offsets`, `num_joints`, `parents`, `children`, `joints_left` and `joints_right`.
+
+            You can get joint positions using the `forward_kinematics` method.
 
     * **mocap_dataset.py**
         
@@ -60,6 +67,16 @@ To test the model:
             `MocapSatset['subject']` returns data of `'subject'`, which is a dictionary of actions, etc.
 
     * **quaternet.py**
+
+        * `class QuaterNet`: 
+        
+            Defines the Network architechture proposed by Pavllo, Grangier and Auli, given by the following Figure:
+        
+            [instert model figure]
+
+            Implementation of the forward propagation method to evaluate the model.
+
+            Does not implement: load batch method, loss function, train method.
 
     * **pose_network.py**
     
