@@ -48,27 +48,28 @@ To test the model:
 
         * `class Skeleton`
         
-            Defines a parameterized skeleton for Mocap data, by means of  the following attributes:
+            Defines a parameterized skeleton for MoCap data, by means of  the following attributes:
             `offsets`, `num_joints`, `parents`, `children`, `joints_left` and `joints_right`.
 
             You can get joint positions using the `forward_kinematics` method.
 
     * **mocap_dataset.py**
         
-        * `class MocapDataset`: Dataset object for Motion Capture
+        * `class MocapDataset`
         
-            You can load MoCap data using this class. It is stored in a dictironary with the following structure:
+            Dataset object for Motion Capture. You can load and store MoCap data using this class.
+            It is stored in a dictironary with the following structure:
 
             `self._data` -> `subject` -> `action` -> `rotations`, `trajectory`, `positions`, `euler_angles`.
 
             It has a `Skeleton` object as attribute where offsets and hierarchy are defined.
             Then , data from all subjects in the dataset are fitted to this skeleton.
 
-            `MocapSatset['subject']` returns data of `'subject'`, which is a dictionary of actions, etc.
+            `MocapDatset['subject']` returns data of `'subject'`, which is a dictionary of actions, etc.
 
     * **quaternet.py**
 
-        * `class QuaterNet`: 
+        * `class QuaterNet`
         
             Defines the Network architechture proposed by Pavllo, Grangier and Auli, given by the following Figure:
         
@@ -79,13 +80,37 @@ To test the model:
             Does not implement: load batch method, loss function, train method.
 
     * **pose_network.py**
+
+        * `class PoseNetwork`
+
+            Derived from `QuaterNet`.
+
+            Declaration of: `_prepare_next_batch_impl` (load batch method) and `_loss_impl` (loss function).
+            
+            Definition of `train`, `load_weights` and `save_weights` methods, .
+
     
     * **visualization.py**
+
+        * *Matplotlib* based methods to display skeleton motion.
     
 * short_term/
 
     * **dataset_h36m.py**
+
+        * Defines the training, validation and test sets for the H3.6M dataset.
+        * Defines the `Skeleton` object used with the H3.6M dataset.
+        * Defines the `MocapDataset` object used for the H3.6M dataset, and load data.
+
     * **pose_network_short_term.py**
+
+        * `class PoseNetworkShortTerm`
+        
+            Derived from `PoseNetwork`.
+
+            Definition of: `_prepare_next_batch_impl` (load batch method) and `_loss_impl` (loss function).
+
+            Defines the `predict` method: given an input sequence, predicts the next sequence of poses (evaluates the model with `no_grad`).
 
 * **prepare_data_short_term.py**
 
