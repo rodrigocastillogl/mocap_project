@@ -252,8 +252,9 @@ def expmap_to_quaternion(e):
 
     return np.concatenate( (w, xyz), axis = 1 ).reshape(original_shape)
 
-"""
+
 def euler_to_quaternion(e, order):
+    """
     Convertion euler angles to quaternions.
     Fromula from:
     "Practical Parameterization of Rotations  Using the Exponential Map"
@@ -266,49 +267,8 @@ def euler_to_quaternion(e, order):
     Output
     ------
         * numpy array with dimensions (N, 4); quaternions
-
-    assert e.shape[-1] == 3
-
-    original_shape = list(e.shape)
-    original_shape[-1] = 4
-
-    e = e.reshape(-1, 3)
-
-    x = e[:,0]
-    y = e[:,1]
-    z = e[:,2]
-
-    rx = np.stack( (np.cos(x/2), np.sin(x/2), np.zeros_like(x), np.zeros_like(x) ), axis = 1 )
-    ry = np.stack( (np.cos(y/2), np.zeros_like(y), np.sin(y/2), np.zeros_like(y) ), axis = 1 )
-    rz = np.stack( (np.cos(z/2), np.zeros_like(z), np.zeros_like(z), np.sin(z/2) ), axis = 1 )
-
-    result = None
-    for coord in order:
-        if coord == 'x':
-            r = rx
-        elif coord == 'y':
-            r = ry
-        elif coord == 'z':
-            r = rz
-        else:
-            raise
-        
-        if result is None:
-            result = r
-        else:
-            result = qmul_np(result, r)
-
-        # reverse antipodal representation to have a non-negative w
-        if order in ['xyz', 'yzx', 'zxy']:
-            result *= -1
-        
-        return result.reshape(original_shape)
-"""
-
-def euler_to_quaternion(e, order):
     """
-    Convert Euler angles to quaternions.
-    """
+
     assert e.shape[-1] == 3
     
     original_shape = list(e.shape)
@@ -320,9 +280,9 @@ def euler_to_quaternion(e, order):
     y = e[:, 1]
     z = e[:, 2]
     
-    rx = np.stack((np.cos(x/2), np.sin(x/2), np.zeros_like(x), np.zeros_like(x)), axis=1)
-    ry = np.stack((np.cos(y/2), np.zeros_like(y), np.sin(y/2), np.zeros_like(y)), axis=1)
-    rz = np.stack((np.cos(z/2), np.zeros_like(z), np.zeros_like(z), np.sin(z/2)), axis=1)
+    rx = np.stack( ( np.cos(x/2), np.sin(x/2), np.zeros_like(x), np.zeros_like(x) ), axis = 1 )
+    ry = np.stack( ( np.cos(y/2), np.zeros_like(y), np.sin(y/2), np.zeros_like(y) ), axis = 1 )
+    rz = np.stack( ( np.cos(z/2), np.zeros_like(z), np.zeros_like(z), np.sin(z/2) ), axis = 1 )
 
     result = None
     for coord in order:
@@ -339,7 +299,7 @@ def euler_to_quaternion(e, order):
         else:
             result = qmul_np(result, r)
             
-    # Reverse antipodal representation to have a non-negative "w"
+    # Reverse antipodal representation to have a non-negative w
     if order in ['xyz', 'yzx', 'zxy']:
         result *= -1
     
