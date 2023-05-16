@@ -191,8 +191,9 @@ def qeuler_np(q, order, epsilon = 0, use_gpu = False):
 
 # Numpy methods for exponential maps - quaternions - euler convertions
 
-"""
+
 def qfix(q):
+    """
     Enforce quaternion continuity across the time dimension by selecting
     the representations (q or -q) with minimal distance between two
     consecutive frames
@@ -206,6 +207,7 @@ def qfix(q):
     Output
     ------
         * numpy array with dimensions (N, J, 4); quaternions
+    """
 
     assert len(q.shape) == 3
     assert q.shape[-1] == 4
@@ -219,18 +221,7 @@ def qfix(q):
     result[1:][mask] *= -1
 
     return result
-"""
 
-def qfix(q):
-    assert len(q.shape) == 3
-    assert q.shape[-1] == 4
-    
-    result = q.copy()
-    dot_products = np.sum(q[1:]*q[:-1], axis=2)
-    mask = dot_products < 0
-    mask = (np.cumsum(mask, axis=0)%2).astype(bool)
-    result[1:][mask] *= -1
-    return result
 
 def expmap_to_quaternion(e):
     """
