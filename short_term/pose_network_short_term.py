@@ -61,14 +61,14 @@ class PoseNetworkShortTerm(PoseNetwork):
         super()._prepare_next_batch_impl(batch_size, dataset, target_length, sequences)
 
         buffer_quat = np.zeros(
-            (batch_size, self.prefix_length + target_length, 32*4), dtype = 'float32'
+            (batch_size, self.prefix_length + target_length, self.num_joints*4), dtype = 'float32'
         )
         buffer_euler = np.zeros(
-            (batch_size, target_length, 32*3), dtype = 'float32'
+            (batch_size, target_length, self.num_joints*3), dtype = 'float32'
         )
-        buffer_out = np.zeros(
-            (batch_size, target_length, 32*4), dtype = 'float32'
-        )
+        #buffer_out = np.zeros(
+        #    (batch_size, target_length, self.num_joints*4), dtype = 'float32'
+        #)
 
         sequences = np.random.permutation(sequences)
 
@@ -90,14 +90,14 @@ class PoseNetworkShortTerm(PoseNetwork):
             buffer_euler[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx].reshape(
                 target_length, -1
             )
-            buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx].reshape(
-                target_length, -1
-            )
+            #buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx].reshape(
+            #    target_length, -1
+            #)
 
             batch_idx += 1
             if batch_idx == batch_size or i == (len(sequences) - 1):
-                # yield buffer_quat[:batch_idx], buffer_euler[:batch_idx]
-                yield buffer_quat[:batch_idx], buffer_out[:batch_idx]
+                yield buffer_quat[:batch_idx], buffer_euler[:batch_idx]
+                #yield buffer_quat[:batch_idx], buffer_out[:batch_idx]
                 batch_idx = 0
 
 
@@ -116,16 +116,16 @@ class PoseNetworkShortTerm(PoseNetwork):
         super()._loss_impl(predicted, expected)
 
         # -- Original loss function (Euler angle L1 distance) -- #
-        #predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        #expected_euler = expected.view(predicted.shape[0], predicted.shape[1], -1, 3 )
-        #predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
-        #distance = torch.remainder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
+        predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+        expected_euler = expected.view(predicted.shape[0], predicted.shape[1], -1, 3 )
+        predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
+        distance = torch.remainder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
         # ------------------------------------------------------ #
 
         # -- New loss function (Quaternions cosine distance) -- #
-        predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        expected_quat = expected.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        distance = 1 - torch.sum( torch.mul(predicted_quat, expected_quat), dim = -1 )
+        #predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+        #expected_quat = expected.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+        #distance = 1 - torch.sum( torch.mul(predicted_quat, expected_quat), dim = -1 )
         # ----------------------------------------------------- #
 
         return torch.mean( torch.abs( distance ) )
