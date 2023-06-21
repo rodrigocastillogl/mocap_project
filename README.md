@@ -13,12 +13,6 @@ where I implement some changes to try new features in the data representation an
 * PyTorch >= 0.4.0
 * NumPy and SciPy
 
-Optional:
-
-* matplotlib: to render and display interactive animations.
-* fmpeg: to export MP4 videos.
-* imagemagick: to export GIFs.
-
 A GPU is recommended if you want to train the models in reasonable time. If you plan on testing the pretrained models, the CPU is fine.
 
 ## Quickstart
