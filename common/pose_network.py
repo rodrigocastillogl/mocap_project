@@ -62,6 +62,7 @@ class PoseNetwork:
         self.model_velocities = model_velocities
         self.use_cuda = False
         self.prefix_length = prefix_length
+        self.num_joints = num_joints
         # -----------------------------------------------
 
         # QuaterNet model
