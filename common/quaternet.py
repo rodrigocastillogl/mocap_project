@@ -19,6 +19,9 @@ class QuaterNet(nn.Module):
         * model_velocities : flag to add a queternion multiplication block on the
                              RNN output to force the network to model velocities
                              instead of absolute rotations.
+        * fc1, fc2 : ReLU fully conected layers (if extra input features)
+        * rnn : Gated recurrent unit.
+        * fc : output ReLU fully-connected layer.
     Methods
     -------
         * __init__() : initialization
@@ -36,53 +39,49 @@ class QuaterNet(nn.Module):
             * num_outputs  : extra inputs/outputs, in addition to joint rotations.
             * num_controls : extra input features.
             * model_velocities : flag to add a queternion multiplication block on the
-                             RNN output to force the network to model velocities
-                             instead of absolute rotations.
+                                 RNN output to force the network to model velocities
+                                 instead of absolute rotations.
                         
         Output
         ------
             * None
         """
 
-        # Initilizing nn.Module
+        # ------------- QuaterNet attributes -------------
         super().__init__()
-
-        # Inititalizing QuaterNet attributes
         self.num_joints   = num_joints
         self.num_outputs  = num_outputs
         self.num_controls = num_controls
         self.model_velocities = model_velocities
+        # ------------------------------------------------
 
-        # ---- Only if there are extra input features ---- #
+        # ----- ReLU Layers (if extra input features) ---- #
         if num_controls > 0:
-            # ReLU Layers
             fc1_size = 30
             fc2_size = 30
             self.fc1 = nn.Linear(num_controls, fc1_size)
             self.fc2 = nn.Linear(fc1_size, fc2_size)
             self.relu = nn.LeakyReLU(0.05, inplace = True)
-        # ------------------------------------------------ #
         else:
             fc2_size = 0
+        # ------------------------------------------------ #
 
-
-        # hidden state size
+        # ------------ Gated Recurrent Units ------------- #
         h_size = 1000
-
-        # GRU layers
         rnn_layers = 2
-
-        # Gated Recurrent Unit
         self.rnn = nn.GRU( input_size = 4 * num_joints + num_outputs + fc2_size,
                            hidden_size = h_size    ,
                            num_layers = rnn_layers ,
                            batch_first = True      )
+        # ------------------------------------------------ #
+
+    
         
         # Initializing hidden state
         self.h0 = nn.Parameter( torch.zeros( rnn_layers, 1, h_size).normal_(std = 0.01),
                                 requires_grad = True )
         
-        # fully connected layer
+        # Output fully connected layer
         self.fc = nn.Linear(h_size, 4 * num_joints + num_outputs)
     
 
@@ -108,7 +107,7 @@ class QuaterNet(nn.Module):
 
         x_orig = x
 
-        # ---- Only if there are extra input features ---- #
+        # ----- ReLU Layers (if extra input features) ---- #
         if self.num_controls > 0:
             controls = x[:, :, (4*self.num_joints + self.num_outputs):]
             controls = self.relu( self.fc1(controls) )
@@ -116,9 +115,11 @@ class QuaterNet(nn.Module):
             x = torch.cat( ( x[:, :, :(4*self.num_joints + self.num_outputs)], controls), dim = 2 )
         # ------------------------------------------------ #
         
+        # ------------ Gated Recurrent Units ------------- #
         if h is None:
             h = self.h0.expand(-1, x.shape[0], -1).contiguous()
         x, h = self.rnn(x, h)
+        # ------------------------------------------------ #
 
         # output
         if return_all:
@@ -130,15 +131,23 @@ class QuaterNet(nn.Module):
         # normalize only quaternion rotations
         pre_normalized = x[:, :, :(4*self.num_joints)].contiguous()
         normalized = pre_normalized.view(-1, 4)
+        
+        # --- Residual arquitecture to model velocities -- #
         if self.model_velocities:
             normalized = qmul( normalized, x_orig[:, :, :(4*self.num_joints)].contiguous().view(-1, 4) )
+        # ------------------------------------------------ #
+
+        # Normalize quaternions
         normalized = F.normalize( normalized, dim = 1 ).view( pre_normalized.shape )
 
+        # ---- Add extra features (if extra features) ---- #
         if self.num_outputs > 0:
             x = torch.cat( (normalized, x[:, :, (4*self.num_joints):]), dim = 2 )
         else:
             x = normalized
+        # ------------------------------------------------ #
         
+        # Output
         if return_prenorm:
             return x, h, pre_normalized
         else:
