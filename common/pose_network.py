@@ -62,6 +62,8 @@ class PoseNetwork:
         self.model_velocities = model_velocities
         self.use_cuda = False
         self.prefix_length = prefix_length
+        self.num_joints = num_joints
+        '''
         if selected_joints:
             self.num_joints = len(selected_joints)
             self.selected_joints = selected_joints
@@ -72,6 +74,7 @@ class PoseNetwork:
         print(f'num_joints: {self.num_joints}')
         print('Selected joints to train:')
         print(self.selected_joints)
+        '''
         # -----------------------------------------------
 
         # QuaterNet model
