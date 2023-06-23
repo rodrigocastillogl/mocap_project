@@ -38,8 +38,8 @@ class PoseNetwork:
         * load_weights()
     """
     
-    def __init__( self, prefix_length, num_joints, num_outputs,
-                  num_controls, model_velocities):
+    def __init__( self, prefix_length, num_joints, num_outputs, 
+                  num_controls, model_velocities, selected_joints = None):
         """
         Initializer
         Input
@@ -62,11 +62,20 @@ class PoseNetwork:
         self.model_velocities = model_velocities
         self.use_cuda = False
         self.prefix_length = prefix_length
-        self.num_joints = num_joints
+        if selected_joints:
+            self.num_joints = len(selected_joints)
+            self.selected_joints = selected_joints
+        else:
+            self.num_joints = num_joints
+            self.selected_joints = list( range(num_joints) )
+        
+        print(f'num_joints: {self.num_joints}')
+        print('Selected joints to train:')
+        print(self.selected_joints)
         # -----------------------------------------------
 
         # QuaterNet model
-        self.model = QuaterNet( num_joints, num_outputs, num_controls, model_velocities )
+        self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
 
         # ------ Number of parameters in the model ------
         dec_params = 0

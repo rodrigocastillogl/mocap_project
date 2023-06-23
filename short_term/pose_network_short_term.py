@@ -40,7 +40,8 @@ class PoseNetworkShortTerm(PoseNetwork):
                          num_joints = 32               ,
                          num_controls = 0              ,
                          num_outputs = 0               ,
-                         model_velocities = True       )
+                         model_velocities = True       ,
+                         selected_joints = [0, 1, 2, 6, 7, 11, 12] )
 
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
@@ -83,11 +84,11 @@ class PoseNetworkShortTerm(PoseNetwork):
             end_idx = start_idx + self.prefix_length + target_length
 
             # input sequence as quaternions 
-            buffer_quat[batch_idx] = dataset[subject][action]['rotations'][start_idx:end_idx].reshape(
+            buffer_quat[batch_idx] = dataset[subject][action]['rotations'][start_idx:end_idx, self.selected_joints].reshape(
                 self.prefix_length + target_length, -1
             )
             # target sequence as Euler angles
-            buffer_euler[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx].reshape(
+            buffer_euler[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx, self.selected_joints].reshape(
                 target_length, -1
             )
             #buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx].reshape(
