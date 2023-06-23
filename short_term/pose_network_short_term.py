@@ -84,12 +84,12 @@ class PoseNetworkShortTerm(PoseNetwork):
             end_idx = start_idx + self.prefix_length + target_length
 
             # input sequence as quaternions 
-            buffer_quat[batch_idx] = dataset[subject][action]['rotations'][start_idx:end_idx].reshape(
+            buffer_quat[batch_idx] = dataset[subject][action]['rotations'][start_idx:end_idx, self.selected_joints].reshape(
                 self.prefix_length + target_length, -1
             )
-            # , self.selected_joints
+            
             # target sequence as Euler angles
-            buffer_euler[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx].reshape(
+            buffer_euler[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx, self.selected_joints].reshape(
                 target_length, -1
             )
             #buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx].reshape(
@@ -100,6 +100,7 @@ class PoseNetworkShortTerm(PoseNetwork):
             if batch_idx == batch_size or i == (len(sequences) - 1):
                 yield buffer_quat[:batch_idx], buffer_euler[:batch_idx]
                 #yield buffer_quat[:batch_idx], buffer_out[:batch_idx]
+                
                 batch_idx = 0
 
 
