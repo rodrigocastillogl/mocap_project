@@ -87,7 +87,7 @@ class PoseNetwork:
         dec_params = 0
         for parameter in self.model.parameters():
             dec_params += parameter.numel()
-        print('# parameters:', dec_params)
+        print('Total of parameters:', dec_params)
         # -----------------------------------------------
 
     
@@ -197,8 +197,6 @@ class PoseNetwork:
             training_file.write('epoch, loss, learning rate, teacher forcing ratio\n')
 
         print("Training for %d epochs" % (n_epochs) )
-        start_time = time()
-        start_epoch = 0
 
         try:
             for epoch in tqdm(range(n_epochs)):
@@ -324,15 +322,6 @@ class PoseNetwork:
                 lr *= lr_decay
                 for param_group in optimizer.param_groups:
                     param_group['lr'] *= lr_decay
-                # -----------------------------------------------
-                
-                # --------------- Display progress --------------
-                if epoch > 0 and (epoch + 1) % 20 == 0:
-                    next_time = time()
-                    time_per_epoch = (next_time - start_time) / (epoch - start_epoch)
-                    # print('Benchmark:', time_per_epoch, 's per epoch')
-                    start_time = next_time
-                    start_epoch = epoch
                 # -----------------------------------------------
 
         except KeyboardInterrupt:

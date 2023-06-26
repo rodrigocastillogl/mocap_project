@@ -166,7 +166,7 @@ def print_results(action, errors):
     print()
 
 
-def run_evaluation( model = None ):
+def run_evaluation( model = None, file_path = 'test.csv' ):
     """
     Evaluate model and display results.
     Input
@@ -180,6 +180,11 @@ def run_evaluation( model = None ):
     actions = [ 'walking', 'eating', 'smoking', 'discussion', 'directions', 'greeting',
                'phoning', 'posing', 'purchases', 'sitting', 'sittingdown', 'takingphoto',
                'waiting', 'walkingdog', 'walkingtogether']
+
+    # Start test file
+    test_file = open(file_path, 'w')
+    test_file.write('subject, action, time(ms), error\n')
+
     
     for subject_test in subjects_test:
         print( 'Testing on subject ' + subject_test )
@@ -188,8 +193,14 @@ def run_evaluation( model = None ):
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
             errors = evaluate(model, test_data)
             all_errors[idx] = errors
+            for f, e in zip(frame_targets, errors[frame_targets] ):
+                test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
             print_results(action, errors)
+        for f, e in zip(frame_targets, all_errors.mean(axis = 0)[frame_targets] ):
+            test_file.write( '%s, average, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
         print_results('average', all_errors.mean(axis = 0) )
+    
+    test_file.close()
 
 
 # RUN EVALUATION
