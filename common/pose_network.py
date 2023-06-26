@@ -11,7 +11,7 @@ import numpy as np
 from common.quaternet import QuaterNet
 from common.quaternion import qeuler
 from time import time
-import tqdm
+from tqdm import tqdm
 
 class PoseNetwork:
     """
