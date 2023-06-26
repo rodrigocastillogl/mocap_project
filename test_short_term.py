@@ -9,6 +9,7 @@ from common.mocap_dataset import MocapDataset
 from common.quaternion import qeuler_np
 from short_term.pose_network_short_term import PoseNetworkShortTerm
 from short_term.dataset_h36m import dataset, subjects_test, short_term_weights_path
+from tqdm import tqdm
 
 torch.manual_seed(1234)
 
@@ -185,20 +186,16 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
     test_file = open(file_path, 'w')
     test_file.write('subject, action, time(ms), error\n')
 
-    
-    for subject_test in subjects_test:
-        print( 'Testing on subject ' + subject_test )
-        print()
+    print('Testing on subjects: '), print(subjects_test)
+    for subject_test in tqdm(subjects_test):
         for idx, action in enumerate( actions ):
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
             errors = evaluate(model, test_data)
             all_errors[idx] = errors
             for f, e in zip(frame_targets, errors[frame_targets] ):
                 test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
-            print_results(action, errors)
         for f, e in zip(frame_targets, all_errors.mean(axis = 0)[frame_targets] ):
             test_file.write( '%s, average, %d, %.5e\n' % ( subject_test, (f+1)/25*1000, e) )
-        print_results('average', all_errors.mean(axis = 0) )
     
     test_file.close()
 
