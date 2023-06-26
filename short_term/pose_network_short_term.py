@@ -64,12 +64,19 @@ class PoseNetworkShortTerm(PoseNetwork):
         buffer_quat = np.zeros(
             (batch_size, self.prefix_length + target_length, self.num_joints*4), dtype = 'float32'
         )
-        buffer_euler = np.zeros(
+
+        # -- Original loss function (Euler angle L1 distance) -- #
+        buffer_out = np.zeros(
             (batch_size, target_length, self.num_joints*3), dtype = 'float32'
         )
+        # ----------------------------------------------------- #
+
+        # --- Loss function with Quaternions cosine distance -- #
         #buffer_out = np.zeros(
         #    (batch_size, target_length, self.num_joints*4), dtype = 'float32'
         #)
+        # ----------------------------------------------------- #
+
 
         sequences = np.random.permutation(sequences)
 
@@ -88,19 +95,21 @@ class PoseNetworkShortTerm(PoseNetwork):
                 self.prefix_length + target_length, -1
             )
             
-            # target sequence as Euler angles
-            buffer_euler[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx, self.selected_joints].reshape(
+            # -- Original loss function (Euler angle L1 distance) -- #
+            buffer_out[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx, self.selected_joints].reshape(
                 target_length, -1
             )
-            #buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx].reshape(
+            # ----------------------------------------------------- #
+
+            # --- Loss function with Quaternions cosine distance -- #
+            #buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx, self.selected_joints].reshape(
             #    target_length, -1
             #)
+            # ----------------------------------------------------- #
 
             batch_idx += 1
             if batch_idx == batch_size or i == (len(sequences) - 1):
-                yield buffer_quat[:batch_idx], buffer_euler[:batch_idx]
-                #yield buffer_quat[:batch_idx], buffer_out[:batch_idx]
-                
+                yield buffer_quat[:batch_idx], buffer_out[:batch_idx]
                 batch_idx = 0
 
 
@@ -173,4 +182,3 @@ class PoseNetworkShortTerm(PoseNetwork):
             result = torch.cat( frames, dim = 1 )
             
             return result.view( result.shape[0], result.shape[1], -1, 4).cpu().numpy()
-    
