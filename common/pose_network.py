@@ -319,7 +319,7 @@ class PoseNetwork:
                     print(
                         '[%d] loss: %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio)
                     )
-                    training_file.write( '%d, %.5e, %.5e, %.5e, %.5e' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
+                    training_file.write( '%d, %.5e, %.5e, %.5e' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
                 # -----------------------------------------------
 
                 # -------------- Update aparameters -------------
