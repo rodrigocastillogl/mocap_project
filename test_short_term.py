@@ -197,7 +197,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
                 test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
             print_results(action, errors)
         for f, e in zip(frame_targets, all_errors.mean(axis = 0)[frame_targets] ):
-            test_file.write( '%s, average, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
+            test_file.write( '%s, average, %d, %.5e\n' % ( subject_test, (f+1)/25*1000, e) )
         print_results('average', all_errors.mean(axis = 0) )
     
     test_file.close()
