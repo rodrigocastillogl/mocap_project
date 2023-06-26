@@ -94,11 +94,7 @@ class PoseNetwork:
         for parameter in self.model.parameters():
             dec_params += parameter.numel()
         print('parameters:', dec_params)
-
-        if self.selected_joints:
-            print('selected joints:'), print(self.selected_joints)
-        else:
-            print('selected joints: full-skeleton')
+        print('joints:', self.num_joints)
         print( '-'*25 + '\n' )
     
     def cuda(self):
