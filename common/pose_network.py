@@ -11,6 +11,7 @@ import numpy as np
 from common.quaternet import QuaterNet
 from common.quaternion import qeuler
 from time import time
+import tqdm
 
 class PoseNetwork:
     """
@@ -67,13 +68,15 @@ class PoseNetwork:
         if selected_joints:
             self.num_joints = len(selected_joints)
             self.selected_joints = selected_joints
+            print('Selected joints:'), print(self.selected_joints)
         else:
             self.num_joints = num_joints
             self.selected_joints = list( range(num_joints) )
+            print('Selected joints: full-skeleton')
         
-        print(f'num_joints: {self.num_joints}')
-        print('Selected joints to train:')
-        print(self.selected_joints)
+        print(f'Total of joints: {self.num_joints}')
+        
+        
         
         # -----------------------------------------------
 
@@ -198,7 +201,7 @@ class PoseNetwork:
         start_epoch = 0
 
         try:
-            for epoch in range(n_epochs):
+            for epoch in tqdm(range(n_epochs)):
                 
                 batch_loss = 0.0
                 N = 0
@@ -311,14 +314,8 @@ class PoseNetwork:
 
                         valid_loss = loss.item()
                         valid_losses.append(valid_loss)
-                        training_file.write( '%d, %.5e, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
-                        print(
-                            '[%d] loss: %.5f valid_loss %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio)
-                        )
+                    training_file.write( '%d, %.5e, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
                 else:
-                    print(
-                        '[%d] loss: %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio)
-                    )
                     training_file.write( '%d, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
                 # -----------------------------------------------
 
@@ -333,7 +330,7 @@ class PoseNetwork:
                 if epoch > 0 and (epoch + 1) % 20 == 0:
                     next_time = time()
                     time_per_epoch = (next_time - start_time) / (epoch - start_epoch)
-                    print('Benchmark:', time_per_epoch, 's per epoch')
+                    # print('Benchmark:', time_per_epoch, 's per epoch')
                     start_time = next_time
                     start_epoch = epoch
                 # -----------------------------------------------
