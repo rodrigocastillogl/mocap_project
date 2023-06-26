@@ -76,20 +76,30 @@ class PoseNetwork:
         # QuaterNet model
         self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
 
-        # ----------------- Print model -----------------
-        print( '-'*8 + 'MODEL' '-'*8 )
+        # print model
+        self.print_model()
+
+    def print_model(self):
+        """
+        Display model information
+        Input
+        -----
+            None
+        Output
+        ------
+            None
+        """
+        print( '-'*9 + ' MODEL '+ '-'*9 )
         dec_params = 0
         for parameter in self.model.parameters():
             dec_params += parameter.numel()
-        print('# parameters:', dec_params)
+        print('parameters:', dec_params)
 
-        if selected_joints:
+        if self.selected_joints:
             print('selected joints:'), print(self.selected_joints)
         else:
             print('selected joints: full-skeleton')
-        print( '-'*23 + '\n' )
-        # -----------------------------------------------
-
+        print( '-'*25 + '\n' )
     
     def cuda(self):
         """
