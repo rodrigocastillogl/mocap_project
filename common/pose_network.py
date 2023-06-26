@@ -68,26 +68,26 @@ class PoseNetwork:
         if selected_joints:
             self.num_joints = len(selected_joints)
             self.selected_joints = selected_joints
-            print('Selected joints:'), print(self.selected_joints)
         else:
             self.num_joints = num_joints
             self.selected_joints = list( range(num_joints) )
-            print('Selected joints: full-skeleton')
-        
-        print(f'Total of joints: {self.num_joints}')
-        
-        
-        
         # -----------------------------------------------
 
         # QuaterNet model
         self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
 
-        # ------ Number of parameters in the model ------
+        # ----------------- Print model -----------------
+        print( '-'*8 + 'MODEL' '-'*8 )
         dec_params = 0
         for parameter in self.model.parameters():
             dec_params += parameter.numel()
-        print('Total of parameters:', dec_params)
+        print('# parameters:', dec_params)
+
+        if selected_joints:
+            print('selected joints:'), print(self.selected_joints)
+        else:
+            print('selected joints: full-skeleton')
+        print( '-'*23 + '\n' )
         # -----------------------------------------------
 
     
@@ -325,13 +325,11 @@ class PoseNetwork:
                 # -----------------------------------------------
 
         except KeyboardInterrupt:
-            print('Training aborted.'), training_file.close()
+            print('Training aborted.\n'), training_file.close()
             
         # End ----------------- Training ----------------
-            
-        print('Done.')
-        training_file.close()
 
+        training_file.close()
         return losses, valid_losses, gradient_norms
     
 
@@ -345,7 +343,7 @@ class PoseNetwork:
         ------
             None 
         """
-        print('Saving weights to', model_file)
+        print('Saving weights to', model_file , '\n')
         torch.save( self.model.state_dict(), model_file )
 
     
@@ -359,7 +357,7 @@ class PoseNetwork:
         ------
             None
         """
-        print('Loadings weights from', model_file)
+        print('Loadings weights from', model_file, '\n')
         self.model.load_state_dict(
             torch.load( model_file, map_location = lambda storage, loc:storage)
         )

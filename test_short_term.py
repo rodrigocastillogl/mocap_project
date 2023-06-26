@@ -186,7 +186,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
     test_file = open(file_path, 'w')
     test_file.write('subject, action, time(ms), error\n')
 
-    print('Testing on subjects: '), print(subjects_test)
+    print('Testing on subjects: ', subjects_test)
     for subject_test in tqdm(subjects_test):
         for idx, action in enumerate( actions ):
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
