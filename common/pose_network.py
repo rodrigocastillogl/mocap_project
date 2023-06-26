@@ -132,8 +132,8 @@ class PoseNetwork:
         pass
 
 
-    def train( self, dataset, target_length, sequences_train,
-               sequences_valid, batch_size, n_epochs = 3000, rot_reg = 0.01 ):
+    def train( self, dataset, target_length, sequences_train, sequences_valid,
+               batch_size, n_epochs = 3000, rot_reg = 0.01, file_path = 'training.csv' ):
         """
         Train the model, updating parameters.
         Input
@@ -185,6 +185,13 @@ class PoseNetwork:
         losses = []             # training loss per epoch
         valid_losses = []       # validation loss per epoch
         gradient_norms = []     # gradient norm per epoch
+
+        # Start training file
+        training_file = open(file_path, 'w')
+        if len(sequences_valid) > 0:
+            training_file.write('epoch, loss, valid loss, learning rate, teacher forcing ratio')
+        else:
+            training_file.write('epoch, loss, learning rate, teacher forcing ratio')
 
         print("Training for %d epochs" % (n_epochs) )
         start_time = time()
@@ -304,6 +311,7 @@ class PoseNetwork:
 
                         valid_loss = loss.item()
                         valid_losses.append(valid_loss)
+                        training_file.write( '%d, %.5e, %.5e, %.5e, %.5e' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
                         print(
                             '[%d] loss: %.5f valid_loss %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio)
                         )
@@ -311,6 +319,7 @@ class PoseNetwork:
                     print(
                         '[%d] loss: %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio)
                     )
+                    training_file.write( '%d, %.5e, %.5e, %.5e, %.5e' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
                 # -----------------------------------------------
 
                 # -------------- Update aparameters -------------
@@ -335,6 +344,8 @@ class PoseNetwork:
         # End ----------------- Training ----------------
             
         print('Done.')
+        training_file.close()
+
         return losses, valid_losses, gradient_norms
     
 
