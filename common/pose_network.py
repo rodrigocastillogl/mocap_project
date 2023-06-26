@@ -189,9 +189,9 @@ class PoseNetwork:
         # Start training file
         training_file = open(file_path, 'w')
         if len(sequences_valid) > 0:
-            training_file.write('epoch, loss, valid loss, learning rate, teacher forcing ratio')
+            training_file.write('epoch, loss, valid loss, learning rate, teacher forcing ratio\n')
         else:
-            training_file.write('epoch, loss, learning rate, teacher forcing ratio')
+            training_file.write('epoch, loss, learning rate, teacher forcing ratio\n')
 
         print("Training for %d epochs" % (n_epochs) )
         start_time = time()
@@ -311,7 +311,7 @@ class PoseNetwork:
 
                         valid_loss = loss.item()
                         valid_losses.append(valid_loss)
-                        training_file.write( '%d, %.5e, %.5e, %.5e, %.5e' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
+                        training_file.write( '%d, %.5e, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
                         print(
                             '[%d] loss: %.5f valid_loss %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio)
                         )
@@ -319,7 +319,7 @@ class PoseNetwork:
                     print(
                         '[%d] loss: %.5f lr %f tf_ratio %f' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio)
                     )
-                    training_file.write( '%d, %.5e, %.5e, %.5e' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
+                    training_file.write( '%d, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
                 # -----------------------------------------------
 
                 # -------------- Update aparameters -------------
@@ -339,7 +339,7 @@ class PoseNetwork:
                 # -----------------------------------------------
 
         except KeyboardInterrupt:
-            print('Training aborted.')
+            print('Training aborted.'), training_file.close()
             
         # End ----------------- Training ----------------
             
