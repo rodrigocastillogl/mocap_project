@@ -110,9 +110,9 @@ def get_test_data(data, action, subject):
             chunk[prefix_length:, :]                                       # ??
         ) )
 
-    print(out[0].shape)
-    print(out[1].shape)
-    print(out[2].shape)
+    print(out[0][0].shape)
+    print(out[0][1].shape)
+    print(out[0][2].shape)
     print()
     return out
 
