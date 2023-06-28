@@ -203,7 +203,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
                 test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
             
             # ---------- Write errors per joint ---------- #
-            file = open(f'errors_joints/errors_{errors.shape[1]:d}joints_action.csv', 'w')
+            file = open(f'errors_joints/errors_{errors_joint.shape[1]:d}joints_action.csv', 'w')
             for frame in range( errors_joint.shape[0] ):
                 for joint in range( errors_joint.shape[1] - 1 ):
                     file.write( '%.5e, ' % errors_joint[frame,joint] )
