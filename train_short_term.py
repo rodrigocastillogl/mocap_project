@@ -13,7 +13,8 @@ torch.manual_seed(1234)
 if __name__ == '__main__':
     
     # ----------------- Define model -----------------
-    model = PoseNetworkShortTerm( prefix_length = 50 )
+    model = PoseNetworkShortTerm( prefix_length = 50,
+                                  selected_joints = [0,1,2,3,6,7,8,11,12,13,16,25] )
     if torch.cuda.is_available():
         model.cuda()
     # ------------------------------------------------
@@ -54,7 +55,8 @@ if __name__ == '__main__':
                  sequences_train ,
                  sequences_valid ,
                  batch_size = 60 ,
-                 n_epochs = 3000 )
+                 n_epochs = 3000 ,
+                 file_path = 'training_12joints.txt')
     # ------------------------------------------------
 
     # Save weights
@@ -63,5 +65,5 @@ if __name__ == '__main__':
     # --------------- Model evaluation ---------------
     model.eval()
     with torch.no_grad():
-        run_evaluation(model)
+        run_evaluation(model,file_path = 'test_12joints.txt')
     # ------------------------------------------------

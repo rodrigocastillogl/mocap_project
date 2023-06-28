@@ -209,6 +209,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
                 file.write(f'joint{model.selected_joints[i]:0>2d},')
             file.write(f'joint{model.selected_joints[-1]:0>2d}\n')
             for frame in range( errors_joint.shape[0] ):
+                file.write( '%d, ' % frame )
                 for joint in range( errors_joint.shape[1] - 1 ):
                     file.write( '%.5e, ' % errors_joint[frame,joint] )
                 file.write( '%.5e\n' % errors_joint[frame,-1] )

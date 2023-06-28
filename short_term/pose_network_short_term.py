@@ -35,13 +35,13 @@ class PoseNetworkShortTerm(PoseNetwork):
         * predict()
     """
 
-    def __init__(self, prefix_length):
+    def __init__(self, prefix_length, selected_joints = None):
         super().__init__(prefix_length = prefix_length ,
                          num_joints = 32               ,
                          num_controls = 0              ,
                          num_outputs = 0               ,
                          model_velocities = True       ,
-                         selected_joints = [0,1,2,3,6,7,8,11,12,13,16] )
+                         selected_joints = selected_joints )
 
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
