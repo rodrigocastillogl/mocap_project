@@ -110,10 +110,6 @@ def get_test_data(data, action, subject):
             chunk[prefix_length:, :]                                       # ??
         ) )
 
-    print(out[0][0].shape)
-    print(out[0][1].shape)
-    print(out[0][2].shape)
-    print()
     return out
 
 
@@ -131,8 +127,8 @@ def evaluate(model, test_data):
 
     errors = []
     for d in test_data:
-        source = np.concatenate( (d[0], d[1][:1]), axis = 0).reshape(-1, 32*4)
-        target = d[2].reshape(-1, 32*4)
+        source = np.concatenate( (d[0][:,model.selected_joints], d[1][:1,model.selected_joints]), axis = 0).reshape(-1, 32*4)
+        target = d[2][:,model.selected_joints].reshape(-1, 32*4)
 
         if model is None:
             target_predicted = np.tile( source[-1], target.shape[0] ).reshape(-1, 32*4)
