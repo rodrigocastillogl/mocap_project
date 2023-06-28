@@ -140,8 +140,9 @@ def evaluate(model, test_data):
         
         target = qeuler_np( target[:target_predicted.shape[0]].reshape(-1,4), 'zyx' ).reshape(-1, model.num_joints*3)
         target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1, model.num_joints*3)
+        k = target_predicted - target
+        print(k.shape)
         e = np.sqrt( np.sum( (target_predicted[:,3:] - target[:,3:] )**2, axis = 1 ) )
-        print(e.shape)
         errors.append(e)
     errors = np.mean( np.array(errors), axis = 0 )
     
