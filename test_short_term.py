@@ -149,7 +149,6 @@ def evaluate(model, test_data):
         errors_joint[i,:,:] = e_joint
     errors = np.mean( np.array(errors), axis = 0 )
     errors_joint = np.mean( errors_joint, axis = 0 )
-    print(errors_joint.shape)
     
     return errors, errors_joint
 
@@ -190,7 +189,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
                'phoning', 'posing', 'purchases', 'sitting', 'sittingdown', 'takingphoto',
                'waiting', 'walkingdog', 'walkingtogether']
 
-    # Start test file
+    # Open test file
     test_file = open(file_path, 'w')
     test_file.write('subject, action, time(ms), error\n')
 
@@ -198,13 +197,23 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
     for subject_test in tqdm(subjects_test):
         for idx, action in enumerate( actions ):
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
-            errors, _ = evaluate(model, test_data)
+            errors, errors_joint = evaluate(model, test_data)
             all_errors[idx] = errors
             for f, e in zip(frame_targets, errors[frame_targets] ):
                 test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
+            
+            # ---------- Write errors per joint ---------- #
+            file = open('errors_joints/errors_{:d}joints_action.csv', 'w')
+            for frame in range( errors_joint.shape[0] ):
+                for joint in range( errors_joint.shape[1] - 1 ):
+                    file.write( '%.5e, ' % errors_joint[frame,joint] )
+                file.write( '%.5e\n' % errors_joint[frame,-1] )
+            file.close()
+            # -------------------------------------------- #
+
         for f, e in zip(frame_targets, all_errors.mean(axis = 0)[frame_targets] ):
             test_file.write( '%s, average, %d, %.5e\n' % ( subject_test, (f+1)/25*1000, e) )
-    
+            
     test_file.close()
 
 
