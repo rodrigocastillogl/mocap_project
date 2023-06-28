@@ -126,7 +126,8 @@ def evaluate(model, test_data):
     """
 
     errors = []
-    for d in test_data:
+    errors_joint = np.zeros( ( len(test_data), np.max(frame_targets) + 1, model.num_joints ) )
+    for i, d in enumerate(test_data):
         source = np.concatenate( (d[0][:,model.selected_joints], d[1][:1,model.selected_joints]), 
                                  axis = 0).reshape( -1, model.num_joints*4 )
         target = d[2][:,model.selected_joints].reshape(-1, model.num_joints*4)
@@ -135,20 +136,22 @@ def evaluate(model, test_data):
             target_predicted = np.tile( source[-1], target.shape[0] ).reshape(-1, model.num_joints*4)
         else:
             target_predicted = model.predict(
-                np.expand_dims(source, 0), target_length = np.max(frame_targets) + 1
+                np.expand_dims(source, 0), target_length = np.max(frame_targets) + 1 
             ).reshape(-1, model.num_joints*4)
             
         target = qeuler_np( target[:target_predicted.shape[0]].reshape(-1,4), 'zyx' ).reshape(-1, model.num_joints, 3)
         target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1, model.num_joints, 3)
         
-        mean_error_joint = np.mean( np.sum( (target_predicted - target)**2, axis = 2 ), axis = 0 )
-        print(mean_error_joint.shape)
-
+        e_joint = np.sqrt( np.sum( (target_predicted - target)**2, axis = 2 ) )
         e = np.sqrt( np.sum( (target_predicted.reshape(-1, model.num_joints*3)[:,3:] - target.reshape(-1, model.num_joints*3)[:,3:] )**2, axis = 1 ) )
+
         errors.append(e)
+        errors_joint[i,:,:] = e_joint
     errors = np.mean( np.array(errors), axis = 0 )
+    errors_joint = np.mean( errors_joint, axis = 0 )
+    print(errors_joint.shape)
     
-    return errors
+    return errors, errors_joint
 
 
 frame_targets = [1, 3, 7, 9, 14, 19, 24, 49, 74, 99] # 80, 160, 320, and 400 ms (at 25 Hz)
@@ -195,7 +198,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
     for subject_test in tqdm(subjects_test):
         for idx, action in enumerate( actions ):
             test_data = get_test_data( dataset, action, int(subject_test[1:]) )
-            errors = evaluate(model, test_data)
+            errors, _ = evaluate(model, test_data)
             all_errors[idx] = errors
             for f, e in zip(frame_targets, errors[frame_targets] ):
                 test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
