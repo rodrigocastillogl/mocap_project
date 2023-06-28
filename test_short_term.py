@@ -127,18 +127,19 @@ def evaluate(model, test_data):
 
     errors = []
     for d in test_data:
-        source = np.concatenate( (d[0][:,model.selected_joints], d[1][:1,model.selected_joints]), axis = 0).reshape(-1, 32*4)
-        target = d[2][:,model.selected_joints].reshape(-1, 32*4)
+        source = np.concatenate( (d[0][:,model.selected_joints], d[1][:1,model.selected_joints]), 
+                                 axis = 0).reshape( -1, model.n_joints*4 )
+        target = d[2][:,model.selected_joints].reshape(-1, model.n_joints*4)
 
         if model is None:
-            target_predicted = np.tile( source[-1], target.shape[0] ).reshape(-1, 32*4)
+            target_predicted = np.tile( source[-1], target.shape[0] ).reshape(-1, model.n_joints*4)
         else:
             target_predicted = model.predict(
                 np.expand_dims(source, 0), target_length = np.max(frame_targets) + 1
-            ).reshape(-1, 32*4)
+            ).reshape(-1, model.n_joints*4)
         
-        target = qeuler_np( target[:target_predicted.shape[0]].reshape(-1,4), 'zyx' ).reshape(-1, 96)
-        target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1,96)
+        target = qeuler_np( target[:target_predicted.shape[0]].reshape(-1,4), 'zyx' ).reshape(-1, model.n_joints*3)
+        target_predicted = qeuler_np( target_predicted.reshape(-1,4), 'zyx').reshape(-1, model.n_joints*3)
         e = np.sqrt( np.sum( (target_predicted[:,3:] - target[:,3:] )**2, axis = 1 ) )
         errors.append(e)
     errors = np.mean( np.array(errors), axis = 0 )
