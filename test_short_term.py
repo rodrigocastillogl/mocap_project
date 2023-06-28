@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 torch.manual_seed(1234)
 
-def find_inidices_srnn( data, action, subject, num_seeds, prefix_length, target_length ):
+def find_indices_srnn( data, action, subject, num_seeds, prefix_length, target_length ):
     """
     Given a data map generated with build_sequence_map_srnn(), return the starting indices
     to get input prefixes to test the model.
@@ -92,7 +92,7 @@ def get_test_data(data, action, subject):
     num_seeds = 8
     prefix_length = 50
     target_length = 100
-    indices = find_inidices_srnn(seq_map, action, subject, num_seeds, prefix_length, target_length)
+    indices = find_indices_srnn(seq_map, action, subject, num_seeds, prefix_length, target_length)
 
     # since actions were downsampled by a factor of 2, keeping all strides,
     # there are two sequences for every action 
@@ -101,7 +101,7 @@ def get_test_data(data, action, subject):
     out = []
     for i in range(num_seeds):
         _, subsequence, idx = seeds[i]
-        idx = idx + 50
+        idx = idx + prefix_length
         chunk = seq_map[ (subject, action, subsequence) ]
         chunk = chunk[ (idx-prefix_length):(idx+target_length), : ]
         out.append( (
@@ -110,6 +110,7 @@ def get_test_data(data, action, subject):
             chunk[prefix_length:, :]                                       # ??
         ) )
 
+    print(out.shape)
     return out
 
 
