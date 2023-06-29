@@ -142,7 +142,7 @@ class PoseNetwork:
 
 
     def train( self, dataset, target_length, sequences_train, sequences_valid,
-               batch_size, n_epochs = 3000, rot_reg = 0.01, file_path = 'training.csv' ):
+               batch_size, n_epochs = 3000, rot_reg = 0.01, file_path = 'training.txt' ):
         """
         Train the model, updating parameters.
         Input

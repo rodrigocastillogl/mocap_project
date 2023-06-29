@@ -174,7 +174,7 @@ def print_results(action, errors):
     print()
 
 
-def run_evaluation( model = None, file_path = 'test.csv' ):
+def run_evaluation( model = None, file_path = 'test.txt' ):
     """
     Evaluate model and display results.
     Input
