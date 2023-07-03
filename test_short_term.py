@@ -174,7 +174,7 @@ def print_results(action, errors):
     print()
 
 
-def run_evaluation( model = None, file_path = 'test.txt' ):
+def run_evaluation( model = None, file_path = 'test.csv' ):
     """
     Evaluate model and display results.
     Input
@@ -191,7 +191,7 @@ def run_evaluation( model = None, file_path = 'test.txt' ):
 
     # Open test file
     test_file = open(file_path, 'w')
-    test_file.write('subject, action, time(ms), error\n')
+    test_file.write('subject,action,time(ms),error\n')
 
     print('Testing on subjects: ', subjects_test)
     for subject_test in tqdm(subjects_test):
@@ -200,24 +200,24 @@ def run_evaluation( model = None, file_path = 'test.txt' ):
             errors, errors_joint = evaluate(model, test_data)
             all_errors[idx] = errors
             for f, e in zip(frame_targets, errors[frame_targets] ):
-                test_file.write( '%s, %s, %d, %.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
+                test_file.write( '%s,%s,%d,%.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
             
             # ---------- Write errors per joint ---------- #
             file = open(f'errors_joints/errors_{errors_joint.shape[1]:d}joints_{action}.csv', 'w')
-            file.write('frame, ')
+            file.write('frame,')
             for i in range( len(model.selected_joints)-1 ):
                 file.write(f'joint{model.selected_joints[i]:0>2d},')
             file.write(f'joint{model.selected_joints[-1]:0>2d}\n')
             for frame in range( errors_joint.shape[0] ):
-                file.write( '%d, ' % frame )
+                file.write( '%d,' % frame )
                 for joint in range( errors_joint.shape[1] - 1 ):
-                    file.write( '%.5e, ' % errors_joint[frame,joint] )
+                    file.write( '%.5e,' % errors_joint[frame,joint] )
                 file.write( '%.5e\n' % errors_joint[frame,-1] )
             file.close()
             # -------------------------------------------- #
 
         for f, e in zip(frame_targets, all_errors.mean(axis = 0)[frame_targets] ):
-            test_file.write( '%s, average, %d, %.5e\n' % ( subject_test, (f+1)/25*1000, e) )
+            test_file.write( '%s,average,%d,%.5e\n' % ( subject_test, (f+1)/25*1000, e) )
 
     test_file.close()
 

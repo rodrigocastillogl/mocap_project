@@ -142,7 +142,7 @@ class PoseNetwork:
 
 
     def train( self, dataset, target_length, sequences_train, sequences_valid,
-               batch_size, n_epochs = 3000, rot_reg = 0.01, file_path = 'training.txt' ):
+               batch_size, n_epochs = 3000, rot_reg = 0.01, file_path = 'training.csv' ):
         """
         Train the model, updating parameters.
         Input
@@ -198,9 +198,9 @@ class PoseNetwork:
         # Start training file
         training_file = open(file_path, 'w')
         if len(sequences_valid) > 0:
-            training_file.write('epoch, loss, valid loss, learning rate, teacher forcing ratio\n')
+            training_file.write('epoch,loss,valid loss,learning rate,teacher forcing ratio\n')
         else:
-            training_file.write('epoch, loss, learning rate, teacher forcing ratio\n')
+            training_file.write('epoch,loss,learning rate,teacher forcing ratio\n')
 
         print("Training for %d epochs" % (n_epochs) )
 
@@ -318,9 +318,9 @@ class PoseNetwork:
 
                         valid_loss = loss.item()
                         valid_losses.append(valid_loss)
-                    training_file.write( '%d, %.5e, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
+                    training_file.write( '%d,%.5e,%.5e,%.5e,%.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
                 else:
-                    training_file.write( '%d, %.5e, %.5e, %.5e\n' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
+                    training_file.write( '%d,%.5e,%.5e,%.5e\n' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
                 # -----------------------------------------------
 
                 # -------------- Update aparameters -------------
