@@ -5,6 +5,7 @@
 
 import torch
 import os
+import errno
 import numpy as np
 from common.mocap_dataset import MocapDataset
 from common.quaternion import qeuler_np
@@ -185,6 +186,15 @@ def run_evaluation( model = None, file_path = 'test.csv', directory_path = ''):
     ------
         None
     """
+
+    # ----------- Create results directory -----------
+    if directory_path != '':
+        try:
+            os.makedirs(directory_path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+    # ------------------------------------------------
 
     actions = [ 'walking', 'eating', 'smoking', 'discussion', 'directions', 'greeting',
                'phoning', 'posing', 'purchases', 'sitting', 'sittingdown', 'takingphoto',
