@@ -88,5 +88,5 @@ if __name__ == '__main__':
         # --------------- Model evaluation ---------------
         model.eval()
         with torch.no_grad():
-            run_evaluation(model,file_path = test_files_names[i])
+            run_evaluation(model,file_path = test_files_names[i], directory_path = 'ensemble_results/joints_errors' )
         # ------------------------------------------------
