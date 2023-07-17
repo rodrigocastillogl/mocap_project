@@ -7,8 +7,8 @@ import torch
 import numpy as np
 from common.mocap_dataset import MocapDataset
 from common.quaternion import qeuler_np
-from short_term.pose_network_short_term import PoseNetworkShortTerm
-from short_term.dataset_h36m import dataset, subjects_test, short_term_weights_path
+from models.pose_network_ensemble import PoseNetworkEnsemble
+from dataset_h36m import dataset, subjects_test, short_term_weights_path
 from tqdm import tqdm
 
 torch.manual_seed(1234)
@@ -225,7 +225,7 @@ def run_evaluation( model = None, file_path = 'test.csv' ):
 # RUN EVALUATION
 if __name__ == '__main__':
 
-    model = PoseNetworkShortTerm(prefix_length = 50)
+    model = PoseNetworkEnsemble(prefix_length = 50)
 
     if torch.cuda.is_available():
         model.cuda()
