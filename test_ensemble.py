@@ -214,7 +214,7 @@ def run_evaluation( model = None, file_path = 'test.csv', directory_path = ''):
                 test_file.write( '%s,%s,%d,%.5e\n' % ( subject_test, action, (f+1)/25*1000, e) )
             
             # ---------- Write errors per joint ---------- #
-            file = open( os.path.join(directory_path, 'errors_{errors_joint.shape[1]:d}joints_{action}.csv'), 'w' )
+            file = open( os.path.join(directory_path, f'errors_{errors_joint.shape[1]:d}joints_{action}.csv'), 'w' )
             file.write('frame,')
             for i in range( len(model.selected_joints)-1 ):
                 file.write(f'joint{model.selected_joints[i]:0>2d},')
