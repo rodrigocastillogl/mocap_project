@@ -5,7 +5,7 @@ from models.pose_network_ensemble import PoseNetworkEnsemble
 from dataset_h36m import dataset, subjects_train, subjects_valid, subjects_test, short_term_weights_path
 from test_ensemble import run_evaluation
 
-#torch.manual_seed(1234)
+torch.manual_seed(1234)
 
 if __name__ == '__main__':
     
