@@ -8,9 +8,9 @@ from common.quaternion import qeuler, qeuler_np, qfix, euler_to_quaternion
 import numpy as np
 import torch
 
-class PoseNetworkShortTerm(PoseNetwork):
+class PoseNetworkEnsemble(PoseNetwork):
     """
-    Short term QuaterNet model for skeleton position forecasting.
+    Ensemble QuaterNet model for skeleton position prediction.
     Attributes
     ----------
         * translations_size : (num_outputs) extra inputs/outputs, in addition to joint rotations.
