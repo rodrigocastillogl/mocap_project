@@ -18,24 +18,13 @@ class PoseNetworkEnsemble(PoseNetwork):
         * model_velocities  : flag to add a queternion multiplication block on the
                               RNN output to force the network to model velocities
                               instead of absolute rotations.
-        * model    : Quaternet model.
-        * use_cuda : flag to use CUDA.
-        * prefix_length : ...
-
-    Methods
-    -------
-        * __init__()
-        * cuda()
-        * eval()
-        * _prepare_next_batch_impl()
-        * _loss_impl()
-        * train()
-        * save_weights()
-        * load_weights()
-        * predict()
+        * model         : Quaternet model.
+        * use_cuda      : flag to use CUDA.
+        * prefix_length : Number of frames in the input. 
     """
 
     def __init__(self, prefix_length, selected_joints = None):
+        
         super().__init__(prefix_length = prefix_length ,
                          num_joints = 32               ,
                          num_controls = 0              ,
@@ -45,38 +34,32 @@ class PoseNetworkEnsemble(PoseNetwork):
 
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
+        
         """
         Load a prepare bacth: input sequence and target sequence.
         Input
         -----
             * batch_size : batch size.
-            * dataset : dataset object load data.
+            * dataset    : dataset object load data.
             * target_length : target sequence length.
-            * sequences : 
+            * sequences : list of sequences in dataset to generate batch.
         Output
         ------
             * buffer_quat  : input sequence.
             * buffer_euler : target sequence.
         """
-        
-        super()._prepare_next_batch_impl(batch_size, dataset, target_length, sequences)
 
-        buffer_quat = np.zeros(
-            (batch_size, self.prefix_length + target_length, self.num_joints*4), dtype = 'float32'
-        )
+        buffer_in = np.zeros( (batch_size, self.prefix_length + target_length, self.num_joints*4),
+                                 dtype = 'float32' )
 
-        # -- Original loss function (Euler angle L1 distance) -- #
-        buffer_out = np.zeros(
-            (batch_size, target_length, self.num_joints*3), dtype = 'float32'
-        )
-        # ----------------------------------------------------- #
-
-        # --- Loss function with Quaternions cosine distance -- #
-        #buffer_out = np.zeros(
-        #    (batch_size, target_length, self.num_joints*4), dtype = 'float32'
-        #)
-        # ----------------------------------------------------- #
-
+        if self.loss_mode == 'euler':
+            # Original loss function (Euler angles L1 distance)
+            buffer_out = np.zeros( (batch_size, target_length, self.num_joints*3),
+                                    dtype = 'float32' )
+        elif self.loss_mode == 'quaternions':
+            # Loss function with quaternions cosine distance
+            buffer_out = np.zeros( (batch_size, target_length, self.num_joints*4),
+                                    dtype = 'float32' )
 
         sequences = np.random.permutation(sequences)
 
@@ -84,32 +67,26 @@ class PoseNetworkEnsemble(PoseNetwork):
         for i, (subject, action) in enumerate(sequences):
 
             # pick a random chunk from each sequence
-            start_idx = np.random.randint(
-                0, dataset[subject][action]['rotations'].shape[0] - self.prefix_length - target_length + 1
-            )
+            start_idx = np.random.randint( 0, dataset[subject][action]['rotations'].shape[0] - self.prefix_length - target_length + 1 )
             mid_idx = start_idx + self.prefix_length
             end_idx = start_idx + self.prefix_length + target_length
 
-            # input sequence as quaternions 
-            buffer_quat[batch_idx] = dataset[subject][action]['rotations'][start_idx:end_idx, self.selected_joints].reshape(
+            buffer_in[batch_idx] = dataset[subject][action]['rotations'][start_idx:end_idx, self.selected_joints].reshape(
                 self.prefix_length + target_length, -1
             )
-            
-            # -- Original loss function (Euler angle L1 distance) -- #
-            buffer_out[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx, self.selected_joints].reshape(
-                target_length, -1
-            )
-            # ----------------------------------------------------- #
 
-            # --- Loss function with Quaternions cosine distance -- #
-            #buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx, self.selected_joints].reshape(
-            #    target_length, -1
-            #)
-            # ----------------------------------------------------- #
+            if self.loss_mode == 'euler':
+                # Original loss function (Euler angles L1 distance)
+                buffer_out[batch_idx] = dataset[subject][action]['rotation_euler'][mid_idx:end_idx, self.selected_joints].reshape(
+                                        target_length, -1 )
+            elif self.loss_mode == 'quaternions':
+                 # Loss function with quaternions cosine distance
+                 buffer_out[batch_idx] = dataset[subject][action]['rotations'][mid_idx:end_idx, self.selected_joints].reshape(
+                                         target_length, -1 )
 
             batch_idx += 1
             if batch_idx == batch_size or i == (len(sequences) - 1):
-                yield buffer_quat[:batch_idx], buffer_out[:batch_idx]
+                yield buffer_in[:batch_idx], buffer_out[:batch_idx]
                 batch_idx = 0
 
 
@@ -125,20 +102,18 @@ class PoseNetworkEnsemble(PoseNetwork):
             * Loss
         """
 
-        super()._loss_impl(predicted, expected)
+        if self.loss_mode == 'euler':
+            # Original loss function (Euler angles L1 distance)
+            predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+            expected_euler = expected.view( predicted.shape[0], predicted.shape[1], -1, 3 )
+            predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
+            distance = torch.remainder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
 
-        # -- Original loss function (Euler angle L1 distance) -- #
-        predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        expected_euler = expected.view(predicted.shape[0], predicted.shape[1], -1, 3 )
-        predicted_euler = qeuler(predicted_quat, order = 'zyx', epsilon = 1e-6)
-        distance = torch.remainder( predicted_euler - expected_euler + np.pi, 2*np.pi ) - np.pi
-        # ------------------------------------------------------ #
-
-        # -- New loss function (Quaternions cosine distance) -- #
-        #predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        #expected_quat = expected.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
-        #distance = 1 - torch.sum( torch.mul(predicted_quat, expected_quat), dim = -1 )
-        # ----------------------------------------------------- #
+        elif self.loss_mode == 'quaternions':
+            # Loss function with quaternions cosine distance
+            predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+            expected_quat = expected.view( predicted.shape[0], predicted.shape[1], -1 , 4 )
+            distance = 1 - torch.sum( torch.mul( predicted_quat, expected_quat ), dim = -1 )
 
         return torch.mean( torch.abs( distance ) )
 

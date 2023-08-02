@@ -39,8 +39,8 @@ class PoseNetwork:
         * load_weights()
     """
     
-    def __init__( self, prefix_length, num_joints, num_outputs, 
-                  num_controls, model_velocities, selected_joints = None):
+    def __init__( self, prefix_length, num_joints, num_outputs, num_controls, 
+                  model_velocities, loss_mode = 'euler', selected_joints = None):
         """
         Initializer
         Input
@@ -64,6 +64,7 @@ class PoseNetwork:
         self.use_cuda = False
         self.prefix_length = prefix_length
         self.num_joints = num_joints
+        self.loss_mode = loss_mode
         
         if selected_joints:
             self.num_joints = len(selected_joints)
