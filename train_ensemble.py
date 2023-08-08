@@ -21,6 +21,16 @@ if __name__ == '__main__':
     selected_list = [ [ 0, 1, 2, 6, 7, 11, 12, 13, 16, 17, 24, 25],
                       [ 0, 1, 2, 3, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 24, 25, 26], 
                       None ]
+    
+    train_params = { 'lr' : 0.001            ,
+                     'lr_decay' : 0.999      ,
+                     'tf_ratio' : 1          ,
+                     'tf_decay' : 0.995      ,
+                     'batch_size' : 60       ,
+                     'batch_size_valid' : 30 ,
+                     'gd_clip' : 0.1         ,
+                     'quaternion_reg' : 0.01 ,
+                     'n_epochs' : 3000       }
 
     weights_names = [ os.path.join(results_path, f) for f in [ f'weights_{len(selected_list[0])}joints.bin',
                                                                f'weights_{len(selected_list[1])}joints.bin',
@@ -77,8 +87,7 @@ if __name__ == '__main__':
                      target_length   ,
                      sequences_train ,
                      sequences_valid ,
-                     batch_size = 60 ,
-                     n_epochs = 3000 ,
+                     train_params    ,
                      file_path = training_files_names[i])
         # ------------------------------------------------
         
