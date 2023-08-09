@@ -53,7 +53,9 @@ class PoseNetworkEnsemble(PoseNetwork):
             * buffer_euler : target sequence.
         """
 
-        buffer_in = np.zeros( (batch_size, self.prefix_length + target_length, self.num_selescted_joints*4),
+        super()._prepare_next_batch_impl(batch_size, dataset, target_length, sequences)
+
+        buffer_in = np.zeros( (batch_size, self.prefix_length + target_length, self.num_selected_joints*4),
                                dtype = 'float32' )
 
         if self.loss_mode == 'euler':
@@ -105,6 +107,8 @@ class PoseNetworkEnsemble(PoseNetwork):
         ------
             * Loss
         """
+
+        super()._loss_impl(predicted, expected)
 
         if self.loss_mode == 'euler':
             # Original loss function (Euler angles L1 distance)
