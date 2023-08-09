@@ -142,8 +142,7 @@ class PoseNetwork:
         pass
 
 
-    def train( self, dataset, target_length, sequences_train, sequences_valid,
-               batch_size, n_epochs = 3000, rot_reg = 0.01, file_path = 'training.csv' ):
+    def train( self, dataset, target_length, sequences_train, sequences_valid, train_params, file_path = 'training.csv'):
         """
         Train the model, updating parameters.
         Input
@@ -151,10 +150,21 @@ class PoseNetwork:
             * dataset : dataset object.
             * target_length   : number of frames to forecast.
             * sequences_train : sequences used to train.
-            * sequences_valid : sequences used for validation
-            * batch_size : batch size during training.
-            * n_epoch : number of epochs during training.
-            * rot_reg : regularization parameter to force quaterions to be unitary.
+            * sequences_valid : sequences used for validation.
+            
+            * train_parameter: training hyperparameters...
+                - lr : starting learning rate.
+                - lr_decay : learning rate decay factor.
+                - tf_ratio : starting teacher forcing ratio.
+                - tf_decay : teacher forcing decay factor.
+                - batch_size : training batch size.
+                - batch_size_valid : validation batch size.
+                - gd_clip : gradient clip factor.
+                - quaternion_reg : regularization parameter to force quaterions to be unitary.
+                - n_epochs : number of epochs to train
+            
+            * file_path: file path to save training results.
+
         Output
         ------
             * losses : training loss
@@ -167,15 +177,23 @@ class PoseNetwork:
         # set model in training mode
         self.model.train()
 
-        # -------------- Hyperparameters ----------------
-        lr = 0.001                 # learning rate
-        lr_decay = 0.999           # learning rate decay factor
-        batch_size_valid = 30      # batch size during validation step
-        teacher_forcing_ratio = 1  # starts by forcing the ground truth 
-        tf_decay = 0.995           # teacher forcing decay factor
-        gradient_clip = 0.1        # gradient_clipping factor
-        optimizer = optim.Adam( self.model.parameters(), lr = lr )
+
+        # --------- Training hyperparameters -----------
+        lr = train_params['lr']
+        lr_decay = train_params['lr_decay']
+        tf_ratio = train_params['tf_ratio']
+        tf_decay = train_params['tf_decay']
+        
+        batch_size = train_params['batch_size']
+        batch_size_valid = train_params['batch_size_valid']
+
+        gd_clip = train_params['gd_clip']
+        quaternion_reg = train_params['quaternion_reg']
+
+        n_epochs = train_params['n_epochs']
         # -----------------------------------------------
+
+        optimizer = optim.Adam( self.model.parameters(), lr = lr )
 
         # ---------------- Validation set ---------------
         if len(sequences_valid) > 0 :
@@ -241,7 +259,7 @@ class PoseNetwork:
                     terms.append(term)
                     predictions.append(predicted)
 
-                    tf_mask = np.random.uniform(size = target_length-1) < teacher_forcing_ratio
+                    tf_mask = np.random.uniform(size = target_length-1) < tf_ratio
                     i = 0
                     while i < target_length-1:
 
@@ -278,7 +296,7 @@ class PoseNetwork:
                     # -----------------------------------------------
 
                     # -------- Compute loss & Backpropagation -------
-                    penalty_loss = rot_reg * torch.mean(
+                    penalty_loss = quaternion_reg * torch.mean(
                         ( torch.sum(terms**2, dim = 3) - 1 )**2
                     )
                     predictions = torch.cat(predictions, dim = 1)
@@ -286,7 +304,7 @@ class PoseNetwork:
                     loss_total = penalty_loss + loss
 
                     loss_total.backward()
-                    nn.utils.clip_grad_norm_(self.model.parameters(), gradient_clip)
+                    nn.utils.clip_grad_norm_(self.model.parameters(), gd_clip)
                     optimizer.step()
                     # -----------------------------------------------
 
@@ -319,13 +337,13 @@ class PoseNetwork:
 
                         valid_loss = loss.item()
                         valid_losses.append(valid_loss)
-                    training_file.write( '%d,%.5e,%.5e,%.5e,%.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, teacher_forcing_ratio) )
+                    training_file.write( '%d,%.5e,%.5e,%.5e,%.5e\n' % (epoch + 1, batch_loss, valid_loss, lr, tf_ratio) )
                 else:
-                    training_file.write( '%d,%.5e,%.5e,%.5e\n' % (epoch + 1, batch_loss, lr, teacher_forcing_ratio) )
+                    training_file.write( '%d,%.5e,%.5e,%.5e\n' % (epoch + 1, batch_loss, lr, tf_ratio) )
                 # -----------------------------------------------
 
                 # -------------- Update aparameters -------------
-                teacher_forcing_ratio *= tf_decay
+                tf_ratio *= tf_decay
                 lr *= lr_decay
                 for param_group in optimizer.param_groups:
                     param_group['lr'] *= lr_decay
