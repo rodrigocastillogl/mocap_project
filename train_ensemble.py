@@ -19,8 +19,9 @@ if __name__ == '__main__':
     # ------------------------------------------------
 
     selected_list = [ None,
-    [ 0, 1, 2, 3, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 24, 25, 26],
-                      [ 0, 1, 2, 6, 7, 11, 12, 13, 16, 17, 24, 25]  ]
+                      [ 0, 1, 2, 3, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 24, 25, 26],
+                      [ 0, 1, 2, 6, 7, 11, 12, 13, 16, 17, 24, 25]
+                    ]
     
     train_params = { 'lr' : 0.001            ,
                      'lr_decay' : 0.999      ,
@@ -32,20 +33,23 @@ if __name__ == '__main__':
                      'quaternion_reg' : 0.01 ,
                      'n_epochs' : 3000       }
 
-    weights_names = [ os.path.join(results_path, f) for f in [ f'weights_{len(selected_list[0])}joints.bin',
+    weights_names = [ os.path.join(results_path, f) for f in [ 'weights_fullskeleton.bin',
                                                                f'weights_{len(selected_list[1])}joints.bin',
-                                                               'weights_fullskeleton.bin'
-                                                             ] ]
+                                                               f'weights_{len(selected_list[2])}joints.bin'
+                                                             ]
+                    ]
     
-    training_files_names = [os.path.join(results_path, f) for f in [ f'training_{len(selected_list[0])}joints.csv',
+    training_files_names = [os.path.join(results_path, f) for f in [ 'training_fullskeleton.csv',
                                                                      f'training_{len(selected_list[1])}joints.csv',
-                                                                     'training_fullskeleton.csv'
-                                                                    ] ]
+                                                                     f'training_{len(selected_list[2])}joints.csv'
+                                                                    ]
+                           ]
     
-    test_files_names = [ os.path.join(results_path, f) for f in [ f'test_{len(selected_list[0])}joints.csv',
+    test_files_names = [ os.path.join(results_path, f) for f in [ 'test_fullskeleton.csv',
                                                                   f'test_{len(selected_list[1])}joints.csv',
-                                                                  'test_fullskeleton.csv'
-                                                                ] ]
+                                                                  f'test_{len(selected_list[2])}joints.csv'
+                                                                ]
+                        ]
     
     for i in range( len(selected_list) ):
         
