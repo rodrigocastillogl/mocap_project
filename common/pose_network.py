@@ -26,17 +26,9 @@ class PoseNetwork:
         * model    : Quaternet model.
         * use_cuda : flag to use CUDA.
         * prefix_length : Number of frames in the input. 
-
-    Methods
-    -------
-        * __init__()
-        * cuda()
-        * eval()
-        * _prepare_next_batch_impl()
-        * _loss_impl()
-        * train()
-        * save_weights()
-        * load_weights()
+        * selected_joint : selected joints to train the model.
+        * num_joint : total number of joints in the skeleton.
+        * num_selected_joints : number of selected joints to train the model.
     """
     
     def __init__( self, prefix_length, num_joints, num_outputs, num_controls, 
@@ -66,13 +58,8 @@ class PoseNetwork:
         self.num_joints = num_joints
         self.loss_mode = loss_mode
         
-        if selected_joints:
-            self.num_joints = len(selected_joints)
-            self.selected_joints = selected_joints
-        else:
-            self.num_joints = num_joints
-            self.selected_joints = list( range(num_joints) )
-        # -----------------------------------------------
+        self.num_selected_joints = num_joints if not selected_joints else len(selected_joints)
+        self.selected_joints = selected_joints
 
         # QuaterNet model
         self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
