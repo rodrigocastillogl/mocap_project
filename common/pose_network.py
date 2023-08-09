@@ -9,9 +9,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 from common.quaternet import QuaterNet
-from common.quaternion import qeuler
 from time import time
 from tqdm import tqdm
+from common.quaternion import qeuler, qeuler_np, qfix, euler_to_quaternion
 
 class PoseNetwork:
     """

@@ -4,7 +4,7 @@
 # ---------------------------------------------- #
 
 from common.pose_network import PoseNetwork
-from common.quaternion import qeuler, qeuler_np, qfix, euler_to_quaternion
+from common.quaternion import qeuler
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
