@@ -52,6 +52,8 @@ class PoseNetworkHierarchy(PoseNetwork):
             * buffer_euler : target sequence.
         """
         
+        super()._prepare_next_batch_impl(batch_size, dataset, target_length, sequences)
+
         buffer_in = np.zeros( (batch_size, self.prefix_length + target_length, self.num_joints*4),
                                dtype = 'float32' )
 
@@ -107,6 +109,8 @@ class PoseNetworkHierarchy(PoseNetwork):
         ------
             * Loss
         """
+        
+        super()._loss_impl(predicted, expected)
 
         predicted_quat = predicted.view( predicted.shape[0], predicted.shape[1], -1 , 4 )[:,:, self.selected_joints ,:]
 
