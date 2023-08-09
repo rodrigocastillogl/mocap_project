@@ -53,16 +53,16 @@ class PoseNetworkEnsemble(PoseNetwork):
             * buffer_euler : target sequence.
         """
 
-        buffer_in = np.zeros( (batch_size, self.prefix_length + target_length, self.num_joints*4),
-                                 dtype = 'float32' )
+        buffer_in = np.zeros( (batch_size, self.prefix_length + target_length, self.num_selescted_joints*4),
+                               dtype = 'float32' )
 
         if self.loss_mode == 'euler':
             # Original loss function (Euler angles L1 distance)
-            buffer_out = np.zeros( (batch_size, target_length, self.num_joints*3),
+            buffer_out = np.zeros( (batch_size, target_length, self.num_selected_joints*3),
                                     dtype = 'float32' )
         elif self.loss_mode == 'quaternions':
             # Loss function with quaternions cosine distance
-            buffer_out = np.zeros( (batch_size, target_length, self.num_joints*4),
+            buffer_out = np.zeros( (batch_size, target_length, self.num_selected_joints*4),
                                     dtype = 'float32' )
 
         sequences = np.random.permutation(sequences)

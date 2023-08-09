@@ -122,6 +122,7 @@ class PoseNetwork:
         """
         pass
 
+
     def _loss_impl( self, predicted, expected ):
         """
         This method must be implemented in the subclass
