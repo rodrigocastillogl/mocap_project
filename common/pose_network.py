@@ -59,7 +59,7 @@ class PoseNetwork:
         self.loss_mode = loss_mode
         
         self.num_selected_joints = num_joints if not selected_joints else len(selected_joints)
-        self.selected_joints = selected_joints
+        self.selected_joints = list(range(num_joints)) if not selected_joints else selected_joints
 
         # QuaterNet model
         self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
