@@ -64,8 +64,6 @@ class PoseNetwork:
         # QuaterNet model
         self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
 
-        # print model
-        self.print_model()
 
     def print_model(self):
         """
