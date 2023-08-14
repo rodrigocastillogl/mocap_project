@@ -58,8 +58,7 @@ class PoseNetwork:
         self.num_joints = num_joints
         self.loss_mode = loss_mode
         
-        self.num_selected_joints = num_joints if not selected_joints else len(selected_joints)
-        self.selected_joints = list(range(num_joints)) if not selected_joints else selected_joints
+        self.selected_joints(selected_joints)
         
 
     def build_model(self):
@@ -96,6 +95,7 @@ class PoseNetwork:
         print('Selected joints:', self.num_selected_joints)
         print( '-'*25 + '\n' )
     
+
     def cuda(self):
         """
         Enable CUDA.
@@ -125,6 +125,15 @@ class PoseNetwork:
         
         self.model.eval()
         return self
+    
+
+    def set_selected_joints(self, selected_joints):
+        """
+        Set list of selected joints.
+        """
+
+        self.num_selected_joints = self.num_joints if not selected_joints else len(selected_joints)
+        self.selected_joints = list(range(self.num_joints)) if not selected_joints else selected_joints
     
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
