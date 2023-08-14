@@ -77,7 +77,7 @@ class PoseNetwork:
         ------
             None
         """
-        print( '-'*9 + ' MODEL '+ '-'*9 )
+        print( '\n' + '-'*9 + ' MODEL '+ '-'*9 )
         dec_params = 0
         for parameter in self.model.parameters():
             dec_params += parameter.numel()
