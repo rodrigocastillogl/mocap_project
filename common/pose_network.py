@@ -80,7 +80,8 @@ class PoseNetwork:
         for parameter in self.model.parameters():
             dec_params += parameter.numel()
         print('parameters:', dec_params)
-        print('joints:', self.num_joints)
+        print('Model joints:', self.num_joints)
+        print('Selected joints:', self.num_selected_joints)
         print( '-'*25 + '\n' )
     
     def cuda(self):
