@@ -37,6 +37,7 @@ class PoseNetworkEnsemble(PoseNetwork):
                          selected_joints = selected_joints )
         
         self.num_joints = self.num_selected_joints
+        self.build_model()
 
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):

@@ -60,9 +60,21 @@ class PoseNetwork:
         
         self.num_selected_joints = num_joints if not selected_joints else len(selected_joints)
         self.selected_joints = list(range(num_joints)) if not selected_joints else selected_joints
+        
 
-        # QuaterNet model
-        self.model = QuaterNet( self.num_joints, num_outputs, num_controls, model_velocities )
+    def build_model(self):
+        """
+        Build QuaterNet model.
+        Input
+        -----
+            None
+        Output
+        ------
+            None
+        """
+
+        self.model = QuaterNet( self.num_joints, self.translations_size,
+                                self.controls_size, self.model_velocities )
 
 
     def print_model(self):

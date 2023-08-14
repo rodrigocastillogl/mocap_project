@@ -35,6 +35,8 @@ class PoseNetworkHierarchy(PoseNetwork):
                          num_outputs = 0               ,
                          model_velocities = True       ,
                          selected_joints = selected_joints )
+        
+        self.build_model()
 
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
