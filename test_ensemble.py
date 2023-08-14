@@ -237,6 +237,7 @@ def run_evaluation( model = None, file_path = 'test.csv', directory_path = ''):
 if __name__ == '__main__':
 
     model = PoseNetworkEnsemble(prefix_length = 50)
+    model.print_model()
 
     if torch.cuda.is_available():
         model.cuda()

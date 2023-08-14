@@ -55,6 +55,7 @@ if __name__ == '__main__':
         
         # ----------------- Define model -----------------
         model = PoseNetworkEnsemble( prefix_length = 50 , selected_joints = selected_list[i] )
+        model.print_model()
         if torch.cuda.is_available():
             model.cuda()
         # ------------------------------------------------
