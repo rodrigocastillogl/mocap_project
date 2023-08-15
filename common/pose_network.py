@@ -133,7 +133,7 @@ class PoseNetwork:
         """
 
         self.num_selected_joints = self.num_joints if not selected_joints else len(selected_joints)
-        self.selected_joints = list(range(self.num_joints)) if not selected_joints else selected_joints
+        self.set_selected_joints = list(range(self.num_joints)) if not selected_joints else selected_joints
     
 
     def _prepare_next_batch_impl(self, batch_size, dataset, target_length, sequences):
