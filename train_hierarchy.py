@@ -3,7 +3,7 @@ import os
 import errno
 from models.pose_network_hierarchy import PoseNetworkHierarchy
 from dataset_h36m import dataset, subjects_train, subjects_valid, subjects_test
-from test_ensemble import run_evaluation
+from test_hierarchy import run_evaluation
 
 torch.manual_seed(1234)
 
