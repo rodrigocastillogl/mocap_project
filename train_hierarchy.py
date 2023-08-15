@@ -62,3 +62,45 @@ if __name__ == '__main__':
         # Set joints selection
         model.set_selected_joints(selected_list[i])
         model.print_model()
+        
+        # -------- Training/Validation sequences ---------
+        # Lists of (subjet, action) tuples.
+        
+        sequences_train = []
+        for subject in subjects_train:
+            for action in dataset[subject].keys():
+                sequences_train.append( (subject, action) )
+        
+        sequences_valid = []
+        for subject in subjects_valid:
+            for action in dataset[subject].keys():
+                sequences_valid.append( (subject, action) )
+        
+        # Display message
+        print( f'Training on {len(sequences_train)} sequences, validation on {len(sequences_valid)} sequences' )
+        
+        # Define prediction target length
+        target_length = 10
+        
+        # Compute Euler angles in dataset (in case of using the loss function based on euler angles)
+        dataset.compute_euler_angles( order = 'zyx' )
+        
+        # ----------------- Train model ------------------
+        model.train( dataset         ,
+                     target_length   ,
+                     sequences_train ,
+                     sequences_valid ,
+                     train_params    ,
+                     file_path = training_files_names[i])
+        # ------------------------------------------------
+        
+        # Save weights
+        model.save_weights( weights_names[i] )
+        # ------------------------------------------------
+
+        # --------------- Model evaluation ---------------
+        model.eval()
+        with torch.no_grad():
+            run_evaluation(model,file_path = test_files_names[i],
+                           directory_path = os.path.join(results_path, 'joints_errors') )
+        # ------------------------------------------------
