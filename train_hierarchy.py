@@ -45,8 +45,8 @@ if __name__ == '__main__':
                                                                     ]
                            ]
     
-    test_files_names = [ os.path.join(results_path, f) for f in [ f'test_{len(selected_list[1])}joints.csv',
-                                                                  f'test_{len(selected_list[2])}joints.csv',
+    test_files_names = [ os.path.join(results_path, f) for f in [ f'test_{len(selected_list[0])}joints.csv',
+                                                                  f'test_{len(selected_list[1])}joints.csv',
                                                                   'test_fullskeleton.csv'
                                                                 ]
                         ]
