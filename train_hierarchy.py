@@ -31,7 +31,7 @@ if __name__ == '__main__':
                      'batch_size_valid' : 30 ,
                      'gd_clip' : 0.1         ,
                      'quaternion_reg' : 0.01 ,
-                     'n_epochs' : 3000       }
+                     'n_epochs' : 1500       }
 
     weights_names = [ os.path.join(results_path, f) for f in [ f'weights_{len(selected_list[0])}joints.bin',
                                                                f'weights_{len(selected_list[1])}joints.bin',
