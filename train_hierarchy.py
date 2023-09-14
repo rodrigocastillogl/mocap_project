@@ -85,9 +85,9 @@ if __name__ == '__main__':
         # Compute Euler angles in dataset (in case of using the loss function based on euler angles)
         dataset.compute_euler_angles( order = 'zyx' )
         
-        train_params = { 'lr' : 0.001 * (0.999^(1000.0*i)),
+        train_params = { 'lr' : 0.001 * (0.999**(1000*i)),
                          'lr_decay' : 0.999      ,
-                         'tf_ratio' : 1 * (0.995^(1000.0*i)),
+                         'tf_ratio' : 1 * (0.995**(1000*i)),
                          'tf_decay' : 0.995      ,
                          'batch_size' : 60       ,
                          'batch_size_valid' : 30 ,
